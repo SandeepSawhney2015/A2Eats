@@ -66,9 +66,11 @@ export default function Map() {
   const [checkinPreview, setCheckinPreview] = useState(null); // object URL for preview
   const tokenRef = useRef(null);
   const [showAddSpot, setShowAddSpot] = useState(false);
-  const [newSpot, setNewSpot] = useState({ name: '', address: '', category: '', honeypot: '' });
+  const [newSpot, setNewSpot] = useState({ name: '', address: '', category: '', lat: null, lng: null, honeypot: '' });
   const [submitStatus, setSubmitStatus] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const placeSearchRef = useRef(null);
+  const autocompleteRef = useRef(null);
   const { token, user } = useAuth();
 
   const SUGGESTION_KEY = `suggestion_log_${user?.id}`;
@@ -77,6 +79,48 @@ export default function Map() {
   // Keep refs in sync
   useEffect(() => { userLocationRef.current = userLocation; }, [userLocation]);
   useEffect(() => { tokenRef.current = token; }, [token]);
+
+  // Load Google Places autocomplete when suggestion modal opens
+  useEffect(() => {
+    if (!showAddSpot) return;
+    const initAutocomplete = () => {
+      if (!placeSearchRef.current || autocompleteRef.current) return;
+      const ac = new window.google.maps.places.Autocomplete(placeSearchRef.current, {
+        componentRestrictions: { country: 'us' },
+        fields: ['name', 'formatted_address', 'geometry'],
+        types: ['establishment'],
+      });
+      ac.addListener('place_changed', () => {
+        const place = ac.getPlace();
+        if (!place.geometry) return;
+        setNewSpot(prev => ({
+          ...prev,
+          name: place.name || prev.name,
+          address: place.formatted_address || prev.address,
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng(),
+        }));
+      });
+      autocompleteRef.current = ac;
+    };
+
+    if (window.google?.maps?.places) {
+      initAutocomplete();
+    } else {
+      const existing = document.getElementById('google-places-script');
+      if (!existing) {
+        const script = document.createElement('script');
+        script.id = 'google-places-script';
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_PLACES_API_KEY}&libraries=places`;
+        script.async = true;
+        script.onload = initAutocomplete;
+        document.head.appendChild(script);
+      } else {
+        existing.addEventListener('load', initAutocomplete);
+      }
+    }
+    return () => { autocompleteRef.current = null; };
+  }, [showAddSpot]);
 
   const getSuggestionLog = () => {
     try {
@@ -304,6 +348,10 @@ export default function Map() {
       setSubmitStatus(`Limit reached. Try again in ${minutesLeft} min.`);
       return;
     }
+    if (!newSpot.lat || !newSpot.lng) {
+      setSubmitStatus('Please select a restaurant from the search dropdown.');
+      return;
+    }
     setSubmitting(true);
     setSubmitStatus('Submitting...');
     try {
@@ -313,7 +361,7 @@ export default function Map() {
       const updated = [...log, Date.now()];
       localStorage.setItem(SUGGESTION_KEY, JSON.stringify(updated));
       setSubmitStatus('Thanks! We\'ll review and add it soon.');
-      setNewSpot({ name: '', address: '', category: '', honeypot: '' });
+      setNewSpot({ name: '', address: '', category: '', lat: null, lng: null, honeypot: '' });
       setTimeout(() => { setShowAddSpot(false); setSubmitStatus(''); }, 2000);
     } catch (err) {
       const msg = err.response?.data?.error || 'Failed to submit. Try again.';
@@ -776,24 +824,28 @@ export default function Map() {
           }}>
             <h2 style={{ color: '#FFCB05', marginBottom: 16, fontWeight: 800 }}>Suggest a Spot</h2>
             <form onSubmit={handleAddSpot}>
-              <input
-                type="text" name="honeypot" tabIndex={-1} autoComplete="off"
+              <input type="text" name="honeypot" tabIndex={-1} autoComplete="off"
                 value={newSpot.honeypot}
                 onChange={e => setNewSpot({ ...newSpot, honeypot: e.target.value })}
                 style={{ display: 'none' }}
               />
+
+              {/* Google Places search */}
               <input
-                type="text" placeholder="Restaurant name" required
-                value={newSpot.name}
-                onChange={e => setNewSpot({ ...newSpot, name: e.target.value })}
+                ref={placeSearchRef}
+                type="text"
+                placeholder="Search for a restaurant..."
                 style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', marginBottom: 10, fontSize: 14, boxSizing: 'border-box' }}
               />
-              <input
-                type="text" placeholder="Address" required
-                value={newSpot.address}
-                onChange={e => setNewSpot({ ...newSpot, address: e.target.value })}
-                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', marginBottom: 10, fontSize: 14, boxSizing: 'border-box' }}
-              />
+
+              {/* Auto-filled name + address preview */}
+              {newSpot.name && (
+                <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 12px', marginBottom: 10 }}>
+                  <div style={{ color: '#FFCB05', fontWeight: 700, fontSize: 13 }}>{newSpot.name}</div>
+                  <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 2 }}>{newSpot.address}</div>
+                </div>
+              )}
+
               <select
                 required
                 value={newSpot.category}

@@ -72,15 +72,15 @@ router.post('/', requireAuth, async (req, res) => {
 
 // Suggest a new spot
 router.post('/suggest', requireAuth, async (req, res) => {
-  const { name, address, category, honeypot } = req.body;
+  const { name, address, category, lat, lng, honeypot } = req.body;
 
   // Bot detection — honeypot field should always be empty
   if (honeypot) {
     return res.status(400).json({ error: 'Invalid submission' });
   }
 
-  if (!name || !address || !category) {
-    return res.status(400).json({ error: 'name, address, and category are required' });
+  if (!name || !address || !category || !lat || !lng) {
+    return res.status(400).json({ error: 'Please select a restaurant from the search dropdown.' });
   }
 
   // Rate limiting — max 2 suggestions per user per hour
@@ -100,33 +100,12 @@ router.post('/suggest', requireAuth, async (req, res) => {
     return res.status(400).json({ error: 'This spot is already in the database.' });
   }
 
-  // Verify place exists via Google Places Text Search
   try {
-    const searchRes = await axios.get('https://maps.googleapis.com/maps/api/place/textsearch/json', {
-      params: {
-        query: `${name} Ann Arbor Michigan`,
-        key: process.env.GOOGLE_PLACES_API_KEY,
-      }
-    });
-
-    const results = searchRes.data.results;
-    if (!results || results.length === 0) {
-      return res.status(400).json({ error: 'Could not verify this place exists in Ann Arbor. Check the name and try again.' });
-    }
-
-    const match = results[0];
-    const vicinity = match.formatted_address || '';
-    if (!vicinity.toLowerCase().includes('ann arbor')) {
-      return res.status(400).json({ error: 'This place doesn\'t appear to be in Ann Arbor.' });
-    }
-
-    // Store with placeholder coordinates — admin adds real lat/lng manually
     await pool.query(
       'INSERT INTO spots (name, address, lat, lng, category) VALUES ($1, $2, $3, $4, $5)',
-      [name, address, 0, 0, category]
+      [name, address, lat, lng, category]
     );
 
-    // Update rate limit log
     userLog.push(now);
     suggestionLog.set(req.userId, userLog);
 
