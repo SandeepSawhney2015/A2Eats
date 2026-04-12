@@ -48,9 +48,7 @@ html, body, #root {
   animation: panelSlideUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-@media (max-width: 767px) {
-  .directions-panel { bottom: calc(110px + env(safe-area-inset-bottom, 20px)) !important; }
-}
+.directions-panel { bottom: calc(110px + env(safe-area-inset-bottom, 20px)) !important; }
 
 @keyframes hopMarkerPulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(255, 203, 5, 0.6); }
@@ -65,22 +63,13 @@ html, body, #root {
   to   { opacity: 1; }
 }
 
-/* Add spot button: clear bottom nav on mobile */
-@media (max-width: 767px) {
-  .add-spot-btn { bottom: calc(110px + env(safe-area-inset-bottom, 20px)) !important; }
-}
+/* Add spot button: clear bottom nav */
+.add-spot-btn { bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important; }
 
 /* Auth page inputs */
 .auth-input::placeholder {
   color: rgba(255, 255, 255, 0.45);
 }
 
-/* Bottom nav: mobile only */
-@media (min-width: 768px) {
-  .bottom-nav { display: none !important; }
-}
-
-/* Profile sidebar: desktop only */
-@media (max-width: 767px) {
-  .profile-sidebar { display: none !important; }
-}
+/* Hide sidebars — bottom nav handles all navigation */
+.profile-sidebar { display: none !important; }
