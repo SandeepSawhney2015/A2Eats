@@ -86,12 +86,12 @@ router.post('/suggest', requireAuth, async (req, res) => {
     return res.status(400).json({ error: 'name, address, and category are required' });
   }
 
-  // Rate limiting — max 2 suggestions per user per hour
+  // Rate limiting — max 2 suggestions per user per day
   const now = Date.now();
-  const oneHour = 60 * 60 * 1000;
-  const userLog = (suggestionLog.get(req.userId) || []).filter(t => now - t < oneHour);
+  const oneDay = 24 * 60 * 60 * 1000;
+  const userLog = (suggestionLog.get(req.userId) || []).filter(t => now - t < oneDay);
   if (userLog.length >= 2) {
-    return res.status(429).json({ error: 'You can only suggest 2 spots per hour. Try again later.' });
+    return res.status(429).json({ error: 'You can only suggest 2 spots per day. Try again tomorrow.' });
   }
 
   // Duplicate check — case insensitive name match
@@ -110,12 +110,15 @@ router.post('/suggest', requireAuth, async (req, res) => {
   // For manual entries, verify with Claude that this is a real restaurant
   if (manual) {
     try {
+      // Sanitize: strip HTML tags and limit length before sending to Claude
+      const safeName = name.replace(/<[^>]*>/g, '').replace(/[^\w\s''\-&.]/g, '').trim().slice(0, 100);
+
       const message = await anthropic.messages.create({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 64,
         messages: [{
           role: 'user',
-          content: `Is "${name}" a real restaurant, cafe, bar, or food establishment? Reply with only valid JSON: {"isRestaurant": true} or {"isRestaurant": false}`
+          content: `Is "${safeName}" a real restaurant, cafe, bar, or food establishment? Reply with only valid JSON: {"isRestaurant": true} or {"isRestaurant": false}`
         }]
       });
       const raw = message.content[0].text.trim();

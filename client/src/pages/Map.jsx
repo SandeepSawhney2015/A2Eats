@@ -77,7 +77,7 @@ export default function Map() {
   const { token, user } = useAuth();
 
   const SUGGESTION_KEY = `suggestion_log_${user?.id}`;
-  const ONE_HOUR = 60 * 60 * 1000;
+  const ONE_DAY = 24 * 60 * 60 * 1000;
 
   // Keep refs in sync
   useEffect(() => { userLocationRef.current = userLocation; }, [userLocation]);
@@ -157,7 +157,7 @@ export default function Map() {
     try {
       const raw = localStorage.getItem(SUGGESTION_KEY);
       const log = raw ? JSON.parse(raw) : [];
-      return log.filter(t => Date.now() - t < ONE_HOUR);
+      return log.filter(t => Date.now() - t < ONE_DAY);
     } catch {
       return [];
     }
@@ -375,8 +375,8 @@ export default function Map() {
     const log = getSuggestionLog();
     if (log.length >= 2) {
       const oldest = Math.min(...log);
-      const minutesLeft = Math.ceil((ONE_HOUR - (Date.now() - oldest)) / 60000);
-      setSubmitStatus(`Limit reached. Try again in ${minutesLeft} min.`);
+      const hoursLeft = Math.ceil((ONE_DAY - (Date.now() - oldest)) / 3600000);
+      setSubmitStatus(`Limit reached. Try again in ${hoursLeft}h.`);
       return;
     }
     if (!newSpot.lat || !newSpot.lng) {
