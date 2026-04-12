@@ -410,7 +410,7 @@ export default function Hops() {
 
           {/* ── Building ── */}
           {isBuilding && (
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, justifyContent: (isMobile && searchFocused) ? 'flex-end' : 'flex-start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
 
               {/* Header — hidden when search focused on mobile */}
               {!(isMobile && searchFocused) && (
@@ -451,16 +451,9 @@ export default function Hops() {
                 </div>
               )}
 
-              {/* Mobile search results — fixed overlay above nav bar */}
-              {isMobile && searchFocused && searchResults.length > 0 && (
-                <div style={{
-                  position: 'fixed', left: 0, right: 0,
-                  bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))',
-                  maxHeight: '40vh', overflowY: 'auto',
-                  background: '#fff', zIndex: 500,
-                  borderTop: '1px solid #f0f0f0',
-                  boxShadow: '0 -4px 20px rgba(0,0,0,0.1)',
-                }}>
+              {/* Mobile search results — in flex flow above the input */}
+              {isMobile && searchFocused && (
+                <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
                   {searchResults.map(spot => (
                     <div key={spot.id} onMouseDown={() => addStop(spot)} style={{
                       padding: '12px 16px', borderBottom: '1px solid #f0f0f0', cursor: 'pointer',
@@ -469,6 +462,9 @@ export default function Hops() {
                       <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>{spot.address}</div>
                     </div>
                   ))}
+                  {searchQuery.length > 1 && searchResults.length === 0 && (
+                    <div style={{ color: '#bbb', textAlign: 'center', padding: '24px 0', fontSize: 13 }}>No results found</div>
+                  )}
                 </div>
               )}
 
