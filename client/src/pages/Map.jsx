@@ -79,6 +79,8 @@ export default function Map() {
   const autocompleteRef = useRef(null);
   const addressInputRef = useRef(null);
   const addressAutocompleteRef = useRef(null);
+  const checkinSubmittingRef = useRef(false);
+  const [locationDenied, setLocationDenied] = useState(false);
   const { token, user } = useAuth();
 
   const SUGGESTION_KEY = `suggestion_log_${user?.id}`;
@@ -339,9 +341,11 @@ export default function Map() {
 
   // Step 2: user confirmed — upload photo if first visit, then verify GPS + post check-in
   const submitCheckin = async () => {
+    if (checkinSubmittingRef.current) return;
     const { spotId, spotName, isFirstVisit } = checkinState;
     if (isFirstVisit && !checkinPhoto) return;
 
+    checkinSubmittingRef.current = true;
     setCheckinState({ step: 'submitting' });
 
     try {
@@ -387,8 +391,13 @@ export default function Map() {
       setCheckinState({ step: 'success', spotName, points: res.data.pointsEarned, isDoubleChud: res.data.isDoubleChud });
       setTimeout(() => setCheckinState(null), 3000);
     } catch (err) {
-      const msg = err.response?.data?.error || err.message || 'Check-in failed.';
+      const raw = err.response?.data?.error || err.message || 'Check-in failed.';
+      const msg = raw.includes('Location unavailable')
+        ? 'Location unavailable. Go to your phone Settings → Privacy → Location Services and make sure your browser has location access, then try again.'
+        : raw;
       setCheckinState({ step: 'error', message: msg });
+    } finally {
+      checkinSubmittingRef.current = false;
     }
   };
 
@@ -552,9 +561,13 @@ export default function Map() {
       setMapReady(true);
     });
 
-    navigator.geolocation.getCurrentPosition(pos => {
-      setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-    });
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocationDenied(false);
+      },
+      () => setLocationDenied(true)
+    );
   }, []);
 
   useEffect(() => {
@@ -675,6 +688,21 @@ export default function Map() {
           color: mode === 'nearby' ? 'white' : '#333', fontWeight: 600,
         }}>Near Me</button>
       </div>
+
+      {/* Location denied banner */}
+      {locationDenied && mode === 'nearby' && (
+        <div style={{
+          position: 'absolute', top: 64, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 15, background: '#00274C', borderRadius: 14, padding: '12px 18px',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.3)', fontFamily: 'system-ui, sans-serif',
+          maxWidth: 320, textAlign: 'center',
+        }}>
+          <div style={{ color: '#FFCB05', fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Location access required</div>
+          <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>
+            Go to Settings → Privacy → Location Services and allow location for your browser, then reload the page.
+          </div>
+        </div>
+      )}
 
       {/* Add Spot button */}
       <button onClick={() => setShowAddSpot(true)} className="add-spot-btn" style={{
