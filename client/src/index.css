@@ -48,7 +48,7 @@ html, body, #root {
 }
 
 @media (max-width: 767px) {
-  .directions-panel { bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
+  .directions-panel { bottom: calc(110px + env(safe-area-inset-bottom, 20px)) !important; }
 }
 
 @keyframes hopMarkerPulse {
@@ -66,7 +66,7 @@ html, body, #root {
 
 /* Add spot button: clear bottom nav on mobile */
 @media (max-width: 767px) {
-  .add-spot-btn { bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
+  .add-spot-btn { bottom: calc(110px + env(safe-area-inset-bottom, 20px)) !important; }
 }
 
 /* Bottom nav: mobile only */

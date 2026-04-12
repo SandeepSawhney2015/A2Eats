@@ -451,20 +451,24 @@ export default function Hops() {
                 </div>
               )}
 
-              {/* Mobile search results overlay — shown when focused */}
-              {isMobile && searchFocused && (
-                <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, marginBottom: 12 }}>
+              {/* Mobile search results — fixed overlay above nav bar */}
+              {isMobile && searchFocused && searchResults.length > 0 && (
+                <div style={{
+                  position: 'fixed', left: 0, right: 0,
+                  bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))',
+                  maxHeight: '40vh', overflowY: 'auto',
+                  background: '#fff', zIndex: 500,
+                  borderTop: '1px solid #f0f0f0',
+                  boxShadow: '0 -4px 20px rgba(0,0,0,0.1)',
+                }}>
                   {searchResults.map(spot => (
                     <div key={spot.id} onMouseDown={() => addStop(spot)} style={{
-                      padding: '12px 4px', borderBottom: '1px solid #f0f0f0', cursor: 'pointer',
+                      padding: '12px 16px', borderBottom: '1px solid #f0f0f0', cursor: 'pointer',
                     }}>
                       <div style={{ fontWeight: 700, fontSize: 14, color: '#00274C' }}>{spot.name}</div>
                       <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>{spot.address}</div>
                     </div>
                   ))}
-                  {searchQuery.length > 1 && searchResults.length === 0 && (
-                    <div style={{ color: '#bbb', textAlign: 'center', padding: '32px 0', fontSize: 13 }}>No results found</div>
-                  )}
                 </div>
               )}
 
@@ -485,12 +489,12 @@ export default function Hops() {
                         fontSize: 16, outline: 'none', boxSizing: 'border-box',
                       }}
                     />
-                    {/* Desktop dropdown */}
+                    {/* Desktop dropdown — appears above input */}
                     {!isMobile && searchResults.length > 0 && (
                       <div style={{
-                        position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50,
-                        background: '#fff', borderRadius: 12, marginTop: 4,
-                        boxShadow: '0 4px 24px rgba(0,0,0,0.14)',
+                        position: 'absolute', bottom: '100%', left: 0, right: 0, zIndex: 50,
+                        background: '#fff', borderRadius: 12, marginBottom: 4,
+                        boxShadow: '0 -4px 24px rgba(0,0,0,0.14)',
                         maxHeight: 220, overflowY: 'auto', border: '1px solid #f0f0f0',
                       }}>
                         {searchResults.map(spot => (
