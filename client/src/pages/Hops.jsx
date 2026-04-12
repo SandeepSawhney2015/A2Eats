@@ -327,7 +327,7 @@ export default function Hops() {
   const nextStop = isActive ? hop.stops.find(s => !s.checked_in_at) : null;
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: '#f5f5f5', fontFamily: 'system-ui,sans-serif', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100dvh', background: '#f5f5f5', fontFamily: 'system-ui,sans-serif', overflow: 'hidden' }}>
 
       {/* Desktop sidebar */}
       <div className="profile-sidebar" style={{
@@ -371,7 +371,7 @@ export default function Hops() {
           display: 'flex',
           flexDirection: 'column',
           padding: '16px 16px',
-          paddingBottom: isMobile ? 80 : 24,
+          paddingBottom: isMobile ? 100 : 24,
           boxShadow: !isMobile && showMap ? '-4px 0 20px rgba(0,0,0,0.06)' : 'none',
         }}>
 

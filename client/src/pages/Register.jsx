@@ -44,7 +44,7 @@ export default function Register() {
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
-            style={{ display: 'block', width: '100%', marginBottom: 12, padding: 8 }}
+            style={{ display: 'block', width: '100%', marginBottom: 12, padding: 8, fontSize: 16 }}
           />
         </div>
         <div>
@@ -54,7 +54,7 @@ export default function Register() {
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
-            style={{ display: 'block', width: '100%', marginBottom: 12, padding: 8 }}
+            style={{ display: 'block', width: '100%', marginBottom: 12, padding: 8, fontSize: 16 }}
           />
         </div>
         {error && <p style={{ color: 'red' }}>{error}</p>}
