@@ -111,6 +111,7 @@ export default function Login() {
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
+            maxLength={50}
             className="auth-input"
             style={{
               display: 'block', width: '100%', marginBottom: 12,
