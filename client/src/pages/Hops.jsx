@@ -622,7 +622,7 @@ export default function Hops() {
       {isMobile && searchFocused && searchResults.length > 0 && (
         <div style={{
           position: 'fixed', left: 0, right: 0, zIndex: 600,
-          bottom: 'calc(64px + env(safe-area-inset-bottom, 0px) + 68px)',
+          bottom: 'calc(64px + env(safe-area-inset-bottom, 0px) + 90px)',
           maxHeight: '45vh', overflowY: 'auto',
           background: '#fff',
           borderTop: '1px solid #f0f0f0',
