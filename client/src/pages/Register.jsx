@@ -58,6 +58,8 @@ export default function Register() {
     if (meta) meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
   };
 
+  const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -65,7 +67,7 @@ export default function Register() {
       setError('Must use a @umich.edu email');
       return;
     }
-    if (!turnstileToken) {
+    if (siteKey && !turnstileToken) {
       setError('Please complete the security check.');
       return;
     }
@@ -142,7 +144,7 @@ export default function Register() {
             }}
           />
 
-          <div ref={turnstileRef} style={{ marginBottom: 16 }} />
+          {siteKey && <div ref={turnstileRef} style={{ marginBottom: 16 }} />}
 
           {error && (
             <div style={{
@@ -153,12 +155,12 @@ export default function Register() {
           )}
           <button
             type="submit"
-            disabled={loading || !turnstileToken}
+            disabled={loading || (siteKey && !turnstileToken)}
             style={{
               width: '100%', padding: '13px 0', borderRadius: 14, border: 'none',
-              background: (loading || !turnstileToken) ? 'rgba(255,203,5,0.5)' : '#FFCB05',
+              background: (loading || (siteKey && !turnstileToken)) ? 'rgba(255,203,5,0.5)' : '#FFCB05',
               color: '#00274C', fontWeight: 800, fontSize: 16,
-              cursor: (loading || !turnstileToken) ? 'not-allowed' : 'pointer',
+              cursor: (loading || (siteKey && !turnstileToken)) ? 'not-allowed' : 'pointer',
             }}
           >{loading ? 'Creating account...' : 'Create account'}</button>
         </form>

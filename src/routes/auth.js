@@ -6,8 +6,24 @@ const requireAuth = require('../middleware/auth');
 
 const router = express.Router();
 
+async function verifyTurnstile(token) {
+  const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ secret: process.env.TURNSTILE_SECRET_KEY, response: token }),
+  });
+  const data = await res.json();
+  return data.success;
+}
+
 router.post('/register', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, turnstileToken } = req.body;
+
+  if (process.env.TURNSTILE_SECRET_KEY) {
+    if (!turnstileToken || !(await verifyTurnstile(turnstileToken))) {
+      return res.status(400).json({ error: 'Security check failed. Please try again.' });
+    }
+  }
 
   if (!email.endsWith('@umich.edu')) {
     return res.status(400).json({ error: 'Must use a @umich.edu email' });
@@ -34,7 +50,11 @@ router.post('/register', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, turnstileToken } = req.body;
+
+  if (!turnstileToken || !(await verifyTurnstile(turnstileToken))) {
+    return res.status(400).json({ error: 'Security check failed. Please try again.' });
+  }
 
   try {
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
