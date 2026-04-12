@@ -6,8 +6,22 @@ const requireAuth = require('../middleware/auth');
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-// In-memory rate limiter: userId -> array of submission timestamps
+// In-memory rate limiters
 const suggestionLog = new Map();
+const editSuggestionLog = new Map();
+
+// Auto-create edit suggestions table
+pool.query(`
+  CREATE TABLE IF NOT EXISTS spot_edit_suggestions (
+    id SERIAL PRIMARY KEY,
+    spot_id INTEGER REFERENCES spots(id) ON DELETE CASCADE,
+    user_id INTEGER,
+    field TEXT NOT NULL,
+    suggested_value TEXT NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  )
+`).catch(console.error);
 
 const router = express.Router();
 
@@ -161,6 +175,37 @@ router.get('/search', async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Suggest an edit for a spot
+router.post('/:id/suggest-edit', requireAuth, async (req, res) => {
+  const { field, suggested_value, notes } = req.body;
+  if (!field || !suggested_value?.trim()) {
+    return res.status(400).json({ error: 'field and suggested_value are required' });
+  }
+
+  const now = Date.now();
+  const oneHour = 60 * 60 * 1000;
+  const userLog = (editSuggestionLog.get(req.userId) || []).filter(t => now - t < oneHour);
+  if (userLog.length >= 5) {
+    return res.status(429).json({ error: 'Edit suggestion limit reached (5/hour). Try again later.' });
+  }
+
+  const spot = await pool.query('SELECT id FROM spots WHERE id = $1', [req.params.id]);
+  if (!spot.rows.length) return res.status(404).json({ error: 'Spot not found' });
+
+  try {
+    await pool.query(
+      'INSERT INTO spot_edit_suggestions (spot_id, user_id, field, suggested_value, notes) VALUES ($1, $2, $3, $4, $5)',
+      [req.params.id, req.userId, field, suggested_value.trim(), notes?.trim() || null]
+    );
+    userLog.push(now);
+    editSuggestionLog.set(req.userId, userLog);
+    res.json({ message: 'Edit suggestion submitted. Thanks!' });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Server error' });
   }
 });

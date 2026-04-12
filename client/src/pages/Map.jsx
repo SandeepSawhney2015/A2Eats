@@ -70,6 +70,19 @@ export default function Map() {
   const [submitStatus, setSubmitStatus] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [manualEntry, setManualEntry] = useState(false);
+  const [editModal, setEditModal] = useState(null); // { spotId, spotName }
+  const [editForm, setEditForm] = useState({ field: '', value: '', notes: '' });
+  const [editSubmitting, setEditSubmitting] = useState(false);
+  const [editStatus, setEditStatus] = useState('');
+
+  const EDIT_LOG_KEY = `edit_log_${user?.id}`;
+  const ONE_HOUR = 60 * 60 * 1000;
+  const getEditLog = () => {
+    try {
+      const raw = localStorage.getItem(EDIT_LOG_KEY);
+      return (raw ? JSON.parse(raw) : []).filter(t => Date.now() - t < ONE_HOUR);
+    } catch { return []; }
+  };
   const placeSearchRef = useRef(null);
   const autocompleteRef = useRef(null);
   const addressInputRef = useRef(null);
@@ -301,6 +314,15 @@ export default function Map() {
     return () => { delete window.handleCheckin; };
   }, []);
 
+  useEffect(() => {
+    window.handleSuggestEdit = (spotId, spotName) => {
+      setEditForm({ field: '', value: '', notes: '' });
+      setEditStatus('');
+      setEditModal({ spotId, spotName });
+    };
+    return () => { delete window.handleSuggestEdit; };
+  }, []);
+
   const compressImage = (file, maxWidth = 1000, quality = 0.8) =>
     new Promise((resolve) => {
       const img = new Image();
@@ -409,6 +431,35 @@ export default function Map() {
     }
   };
 
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    const log = getEditLog();
+    if (log.length >= 5) {
+      setEditStatus('Limit reached (5/hour). Try again later.');
+      return;
+    }
+    if (!editForm.field || !editForm.value.trim()) {
+      setEditStatus('Please fill in all required fields.');
+      return;
+    }
+    setEditSubmitting(true);
+    setEditStatus('');
+    try {
+      await axios.post(`${BASE}/api/spots/${editModal.spotId}/suggest-edit`,
+        { field: editForm.field, suggested_value: editForm.value, notes: editForm.notes },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const updated = [...log, Date.now()];
+      localStorage.setItem(EDIT_LOG_KEY, JSON.stringify(updated));
+      setEditStatus('Thanks! We\'ll review your suggestion.');
+      setTimeout(() => { setEditModal(null); setEditStatus(''); }, 2000);
+    } catch (err) {
+      setEditStatus(err.response?.data?.error || 'Failed to submit. Try again.');
+    } finally {
+      setEditSubmitting(false);
+    }
+  };
+
   // Init map once
   useEffect(() => {
     if (map.current) return;
@@ -486,8 +537,12 @@ export default function Map() {
               ">Get Directions</button>
               <button onclick="window.handleCheckin && window.handleCheckin(${p.id}, '${p.name.replace(/'/g, "\\'")}')" style="
                 width:100%;padding:10px;background:#FFCB05;color:#00274C;
-                border:none;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;
+                border:none;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;margin-bottom:8px;
               ">Check In</button>
+              <button onclick="window.handleSuggestEdit && window.handleSuggestEdit(${p.id}, '${p.name.replace(/'/g, "\\'")}')" style="
+                width:100%;padding:8px;background:none;color:rgba(255,255,255,0.4);
+                border:1px solid rgba(255,255,255,0.15);border-radius:10px;font-weight:600;font-size:12px;cursor:pointer;
+              ">Suggest an Edit</button>
             </div>
           `)
           .addTo(map.current);
@@ -845,6 +900,76 @@ export default function Map() {
               </>
             )}
 
+          </div>
+        </div>
+      )}
+
+      {/* Suggest Edit modal */}
+      {editModal && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 25,
+          background: 'rgba(0,0,0,0.6)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            background: '#00274C', borderRadius: 20, padding: 24,
+            width: 320, boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+            fontFamily: 'system-ui, sans-serif',
+          }}>
+            <div style={{ color: '#FFCB05', fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Suggest an Edit</div>
+            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, marginBottom: 16 }}>{editModal.spotName}</div>
+
+            <form onSubmit={handleEditSubmit}>
+              <select
+                required
+                value={editForm.field}
+                onChange={e => setEditForm(f => ({ ...f, field: e.target.value }))}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', marginBottom: 10, fontSize: 14, boxSizing: 'border-box' }}
+              >
+                <option value="">What needs updating?</option>
+                <option value="name">Name</option>
+                <option value="address">Address</option>
+                <option value="category">Cuisine / Category</option>
+                <option value="hours">Hours</option>
+                <option value="other">Other</option>
+              </select>
+
+              <input
+                type="text"
+                required
+                placeholder="Suggested value"
+                value={editForm.value}
+                onChange={e => setEditForm(f => ({ ...f, value: e.target.value }))}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', marginBottom: 10, fontSize: 14, boxSizing: 'border-box' }}
+              />
+
+              <input
+                type="text"
+                placeholder="Notes (optional)"
+                value={editForm.notes}
+                onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', marginBottom: 14, fontSize: 14, boxSizing: 'border-box' }}
+              />
+
+              {editStatus && (
+                <div style={{ color: editStatus.startsWith('Thanks') ? '#4ECDC4' : '#FFCB05', fontSize: 13, marginBottom: 10 }}>
+                  {editStatus}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button type="submit" disabled={editSubmitting || getEditLog().length >= 5} style={{
+                  flex: 2, padding: 10,
+                  background: (editSubmitting || getEditLog().length >= 5) ? 'rgba(255,203,5,0.4)' : '#FFCB05',
+                  color: '#00274C', border: 'none', borderRadius: 10, fontWeight: 800,
+                  cursor: (editSubmitting || getEditLog().length >= 5) ? 'not-allowed' : 'pointer', fontSize: 14,
+                }}>{editSubmitting ? 'Submitting...' : 'Submit'}</button>
+                <button type="button" onClick={() => setEditModal(null)} style={{
+                  flex: 1, padding: 10, background: 'rgba(255,255,255,0.15)', color: 'white',
+                  border: 'none', borderRadius: 10, fontWeight: 600, cursor: 'pointer', fontSize: 14,
+                }}>Cancel</button>
+              </div>
+            </form>
           </div>
         </div>
       )}
