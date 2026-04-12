@@ -655,7 +655,7 @@ export default function Map() {
             {item.label}
           </a>
         ))}
-        <a href="https://github.com/SandeepSawhney2015/A2Chuds" target="_blank" rel="noopener noreferrer"
+        <a href="https://github.com/SandeepSawhney2015/A2Eats" target="_blank" rel="noopener noreferrer"
           style={{
             marginTop: 'auto', marginBottom: 16,
             width: 48, height: 48, borderRadius: 12,
