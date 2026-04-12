@@ -70,6 +70,11 @@ html, body, #root {
   .add-spot-btn { bottom: calc(110px + env(safe-area-inset-bottom, 20px)) !important; }
 }
 
+/* Auth page inputs */
+.auth-input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
 /* Bottom nav: mobile only */
 @media (min-width: 768px) {
   .bottom-nav { display: none !important; }
