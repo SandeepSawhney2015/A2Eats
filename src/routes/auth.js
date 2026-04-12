@@ -25,8 +25,16 @@ async function verifyTurnstile(token) {
   return data.success;
 }
 
+function containsHTML(str) {
+  return typeof str === 'string' && /<[^>]*>/.test(str);
+}
+
 router.post('/register', async (req, res) => {
   const { email, password, turnstileToken } = req.body;
+
+  if (containsHTML(email) || containsHTML(password)) {
+    return res.status(400).json({ error: 'Invalid input.' });
+  }
 
   if (process.env.TURNSTILE_SECRET_KEY) {
     if (!turnstileToken || !(await verifyTurnstile(turnstileToken))) {
@@ -64,6 +72,10 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', loginLimiter, async (req, res) => {
   const { email, password, turnstileToken } = req.body;
+
+  if (containsHTML(email) || containsHTML(password)) {
+    return res.status(400).json({ error: 'Invalid input.' });
+  }
 
   if (!turnstileToken || !(await verifyTurnstile(turnstileToken))) {
     return res.status(400).json({ error: 'Security check failed. Please try again.' });

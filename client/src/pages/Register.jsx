@@ -63,6 +63,10 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (/<[^>]*>/.test(email) || /<[^>]*>/.test(password)) {
+      setError('Invalid input.');
+      return;
+    }
     if (!email.endsWith('@umich.edu')) {
       setError('Must use a @umich.edu email');
       return;

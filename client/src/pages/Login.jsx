@@ -64,6 +64,10 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (/<[^>]*>/.test(email) || /<[^>]*>/.test(password)) {
+      setError('Invalid input.');
+      return;
+    }
     if (siteKey && !turnstileToken) {
       setError('Please complete the security check.');
       return;
