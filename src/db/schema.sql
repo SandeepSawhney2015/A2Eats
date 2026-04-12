@@ -1,0 +1,47 @@
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  chud_points INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE spots (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  address VARCHAR(255) NOT NULL,
+  lat DECIMAL(9,6) NOT NULL,
+  lng DECIMAL(9,6) NOT NULL,
+  category VARCHAR(50),
+  yelp_id VARCHAR(100) UNIQUE,
+  photo_url VARCHAR(255),
+  rating DECIMAL(2,1),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE check_ins (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  spot_id INTEGER REFERENCES spots(id) ON DELETE CASCADE,
+  photo_url VARCHAR(255) NOT NULL,
+  points_earned INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE hops (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR(100) NOT NULL,
+  status VARCHAR(20) DEFAULT 'planned',
+  multiplier DECIMAL(3,1) DEFAULT 1.0,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE hop_spots (
+  id SERIAL PRIMARY KEY,
+  hop_id INTEGER REFERENCES hops(id) ON DELETE CASCADE,
+  spot_id INTEGER REFERENCES spots(id) ON DELETE CASCADE,
+  position INTEGER NOT NULL,
+  checked_in_at TIMESTAMP
+);
