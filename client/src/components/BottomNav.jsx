@@ -13,10 +13,12 @@ export default function BottomNav() {
 
   return (
     <nav className="bottom-nav" style={{
-      position: 'fixed', bottom: 0, left: 0, right: 0, height: 64, zIndex: 1000,
+      position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000,
       background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(8px)',
       borderTop: '1px solid rgba(0,0,0,0.08)',
       display: 'flex', alignItems: 'center', justifyContent: 'space-around',
+      paddingBottom: 'env(safe-area-inset-bottom)',
+      minHeight: 64,
     }}>
       {NAV.map(item => {
         const active = location.pathname === item.path;
