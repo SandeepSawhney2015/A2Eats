@@ -390,9 +390,9 @@ export default function Map() {
       return;
     }
     setSubmitting(true);
-    setSubmitStatus('Submitting...');
+    setSubmitStatus(manualEntry ? 'Verifying restaurant...' : 'Submitting...');
     try {
-      await axios.post(`${BASE}/api/spots/suggest`, { ...newSpot, honeypot: newSpot.honeypot || '' }, {
+      await axios.post(`${BASE}/api/spots/suggest`, { ...newSpot, honeypot: newSpot.honeypot || '', manual: manualEntry }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const updated = [...log, Date.now()];

@@ -1,7 +1,10 @@
 const express = require('express');
 const axios = require('axios');
+const Anthropic = require('@anthropic-ai/sdk');
 const pool = require('../db');
 const requireAuth = require('../middleware/auth');
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // In-memory rate limiter: userId -> array of submission timestamps
 const suggestionLog = new Map();
@@ -72,7 +75,7 @@ router.post('/', requireAuth, async (req, res) => {
 
 // Suggest a new spot
 router.post('/suggest', requireAuth, async (req, res) => {
-  const { name, address, category, lat, lng, honeypot } = req.body;
+  const { name, address, category, lat, lng, honeypot, manual } = req.body;
 
   // Bot detection — honeypot field should always be empty
   if (honeypot) {
@@ -102,6 +105,28 @@ router.post('/suggest', requireAuth, async (req, res) => {
 
   if (!lat || !lng) {
     return res.status(400).json({ error: 'Location coordinates are required.' });
+  }
+
+  // For manual entries, verify with Claude that this is a real restaurant
+  if (manual) {
+    try {
+      const message = await anthropic.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 64,
+        messages: [{
+          role: 'user',
+          content: `Is "${name}" a real restaurant, cafe, bar, or food establishment? Reply with only valid JSON: {"isRestaurant": true} or {"isRestaurant": false}`
+        }]
+      });
+      const raw = message.content[0].text.trim();
+      const json = JSON.parse(raw.match(/\{.*\}/s)[0]);
+      if (!json.isRestaurant) {
+        return res.status(400).json({ error: `"${name}" doesn't appear to be a real restaurant or food establishment.` });
+      }
+    } catch (err) {
+      console.error('Claude verification error:', err);
+      // If Claude fails, let it through rather than blocking valid suggestions
+    }
   }
 
   try {
