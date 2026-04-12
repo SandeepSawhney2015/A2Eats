@@ -56,18 +56,20 @@ router.post('/', requireAuth, async (req, res) => {
       });
     }
 
-    // Global cooldown — prevent farming a cluster of nearby spots
-    const lastAny = await pool.query(
-      'SELECT created_at FROM check_ins WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1',
-      [req.userId]
-    );
-    if (lastAny.rows.length > 0) {
-      const msSinceLast = Date.now() - new Date(lastAny.rows[0].created_at).getTime();
-      if (msSinceLast < GLOBAL_CHECKIN_COOLDOWN_MS) {
-        const minsLeft = Math.ceil((GLOBAL_CHECKIN_COOLDOWN_MS - msSinceLast) / 60000);
-        return res.status(429).json({
-          error: `You just checked in somewhere. Wait ${minsLeft} minute${minsLeft !== 1 ? 's' : ''} before checking in again.`
-        });
+    // Global cooldown — prevent farming a cluster of nearby spots (skipped during active hops)
+    if (!hop_id) {
+      const lastAny = await pool.query(
+        'SELECT created_at FROM check_ins WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1',
+        [req.userId]
+      );
+      if (lastAny.rows.length > 0) {
+        const msSinceLast = Date.now() - new Date(lastAny.rows[0].created_at).getTime();
+        if (msSinceLast < GLOBAL_CHECKIN_COOLDOWN_MS) {
+          const minsLeft = Math.ceil((GLOBAL_CHECKIN_COOLDOWN_MS - msSinceLast) / 60000);
+          return res.status(429).json({
+            error: `You just checked in somewhere. Wait ${minsLeft} minute${minsLeft !== 1 ? 's' : ''} before checking in again.`
+          });
+        }
       }
     }
 
