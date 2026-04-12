@@ -451,22 +451,8 @@ export default function Hops() {
                 </div>
               )}
 
-              {/* Mobile search results — in flex flow above the input */}
-              {isMobile && searchFocused && (
-                <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
-                  {searchResults.map(spot => (
-                    <div key={spot.id} onMouseDown={() => addStop(spot)} style={{
-                      padding: '12px 16px', borderBottom: '1px solid #f0f0f0', cursor: 'pointer',
-                    }}>
-                      <div style={{ fontWeight: 700, fontSize: 14, color: '#00274C' }}>{spot.name}</div>
-                      <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>{spot.address}</div>
-                    </div>
-                  ))}
-                  {searchQuery.length > 1 && searchResults.length === 0 && (
-                    <div style={{ color: '#bbb', textAlign: 'center', padding: '24px 0', fontSize: 13 }}>No results found</div>
-                  )}
-                </div>
-              )}
+              {/* spacer so input stays pinned at bottom when focused */}
+              {isMobile && searchFocused && <div style={{ flex: 1 }} />}
 
               {/* Search + Start — pinned at bottom, single persistent input */}
               <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: 12, flexShrink: 0 }}>
@@ -631,6 +617,27 @@ export default function Hops() {
           )}
         </div>
       </div>
+
+      {/* Mobile search results — fixed, grows upward from just above the input */}
+      {isMobile && searchFocused && searchResults.length > 0 && (
+        <div style={{
+          position: 'fixed', left: 0, right: 0, zIndex: 600,
+          bottom: 'calc(64px + env(safe-area-inset-bottom, 0px) + 68px)',
+          maxHeight: '45vh', overflowY: 'auto',
+          background: '#fff',
+          borderTop: '1px solid #f0f0f0',
+          boxShadow: '0 -4px 16px rgba(0,0,0,0.08)',
+        }}>
+          {searchResults.map(spot => (
+            <div key={spot.id} onMouseDown={() => addStop(spot)} style={{
+              padding: '12px 16px', borderBottom: '1px solid #f0f0f0', cursor: 'pointer',
+            }}>
+              <div style={{ fontWeight: 700, fontSize: 14, color: '#00274C' }}>{spot.name}</div>
+              <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>{spot.address}</div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Toast */}
       {toast && (
