@@ -4,7 +4,7 @@ const requireAuth = require('../middleware/auth');
 
 const router = express.Router();
 
-const CHECKIN_RADIUS_MILES = 0.2;
+const CHECKIN_RADIUS_MILES = 0.05; // ~265 feet
 const BASE_POINTS = 10;
 const DOUBLE_CHUD_POINTS = 3;
 const HOP_BONUS_POINTS = 20;
@@ -171,7 +171,7 @@ router.post('/current/stops/:stopId/complete', requireAuth, async (req, res) => 
     const dist = haversine(parseFloat(user_lat), parseFloat(user_lng), parseFloat(stop.lat), parseFloat(stop.lng));
     if (dist > CHECKIN_RADIUS_MILES) {
       const ft = Math.round(dist * 5280);
-      return res.status(400).json({ error: `You're ${ft} ft away — get within ${Math.round(CHECKIN_RADIUS_MILES * 5280)} ft to chud.` });
+      return res.status(400).json({ error: `You're ${ft} ft away — get within ${Math.round(CHECKIN_RADIUS_MILES * 5280)} ft to chow.` });
     }
 
     // Per-spot daily cooldown — can't chud the same place twice in one day
@@ -180,7 +180,7 @@ router.post('/current/stops/:stopId/complete', requireAuth, async (req, res) => 
       [req.userId, stop.spot_id]
     );
     if (todayAtSpot.rows.length > 0) {
-      return res.status(429).json({ error: `You already chudd here today. Come back tomorrow!` });
+      return res.status(429).json({ error: `You already chowed here today. Come back tomorrow!` });
     }
 
     // First visit or Double Chud? (visited before, just not today)
