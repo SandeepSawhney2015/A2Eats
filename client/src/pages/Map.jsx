@@ -70,8 +70,8 @@ export default function Map() {
   const [submitStatus, setSubmitStatus] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [manualEntry, setManualEntry] = useState(false);
-  const [editModal, setEditModal] = useState(null); // { spotId, spotName }
-  const [editForm, setEditForm] = useState({ field: '', value: '', notes: '' });
+  const [editModal, setEditModal] = useState(null); // { spotId, spotName, spotCategory }
+  const [editForm, setEditForm] = useState({ name: '', category: '' });
   const [editSubmitting, setEditSubmitting] = useState(false);
   const [editStatus, setEditStatus] = useState('');
 
@@ -315,10 +315,10 @@ export default function Map() {
   }, []);
 
   useEffect(() => {
-    window.handleSuggestEdit = (spotId, spotName) => {
-      setEditForm({ field: '', value: '', notes: '' });
+    window.handleSuggestEdit = (spotId, spotName, spotCategory) => {
+      setEditForm({ name: spotName, category: spotCategory || '' });
       setEditStatus('');
-      setEditModal({ spotId, spotName });
+      setEditModal({ spotId, spotName, spotCategory });
     };
     return () => { delete window.handleSuggestEdit; };
   }, []);
@@ -438,23 +438,24 @@ export default function Map() {
       setEditStatus('Limit reached (5/hour). Try again later.');
       return;
     }
-    if (!editForm.field || !editForm.value.trim()) {
-      setEditStatus('Please fill in all required fields.');
+    if (!editForm.name.trim()) {
+      setEditStatus('Name cannot be empty.');
       return;
     }
     setEditSubmitting(true);
     setEditStatus('');
     try {
-      await axios.post(`${BASE}/api/spots/${editModal.spotId}/suggest-edit`,
-        { field: editForm.field, suggested_value: editForm.value, notes: editForm.notes },
+      await axios.patch(`${BASE}/api/spots/${editModal.spotId}/edit`,
+        { name: editForm.name, category: editForm.category },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const updated = [...log, Date.now()];
       localStorage.setItem(EDIT_LOG_KEY, JSON.stringify(updated));
-      setEditStatus('Thanks! We\'ll review your suggestion.');
-      setTimeout(() => { setEditModal(null); setEditStatus(''); }, 2000);
+      setEditModal(null);
+      setEditStatus('');
+      loadSpots();
     } catch (err) {
-      setEditStatus(err.response?.data?.error || 'Failed to submit. Try again.');
+      setEditStatus(err.response?.data?.error || 'Failed to update. Try again.');
     } finally {
       setEditSubmitting(false);
     }
@@ -539,10 +540,10 @@ export default function Map() {
                 width:100%;padding:10px;background:#FFCB05;color:#00274C;
                 border:none;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;margin-bottom:8px;
               ">Check In</button>
-              <button onclick="window.handleSuggestEdit && window.handleSuggestEdit(${p.id}, '${p.name.replace(/'/g, "\\'")}')" style="
+              <button onclick="window.handleSuggestEdit && window.handleSuggestEdit(${p.id}, '${p.name.replace(/'/g, "\\'")}', '${(p.category || '').replace(/'/g, "\\'")}')" style="
                 width:100%;padding:8px;background:none;color:rgba(255,255,255,0.4);
                 border:1px solid rgba(255,255,255,0.15);border-radius:10px;font-weight:600;font-size:12px;cursor:pointer;
-              ">Suggest an Edit</button>
+              ">Edit</button>
             </div>
           `)
           .addTo(map.current);
@@ -904,7 +905,7 @@ export default function Map() {
         </div>
       )}
 
-      {/* Suggest Edit modal */}
+      {/* Edit spot modal */}
       {editModal && (
         <div style={{
           position: 'absolute', inset: 0, zIndex: 25,
@@ -916,45 +917,30 @@ export default function Map() {
             width: 320, boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
             fontFamily: 'system-ui, sans-serif',
           }}>
-            <div style={{ color: '#FFCB05', fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Suggest an Edit</div>
-            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, marginBottom: 16 }}>{editModal.spotName}</div>
+            <div style={{ color: '#FFCB05', fontWeight: 800, fontSize: 18, marginBottom: 16 }}>Edit Spot</div>
 
             <form onSubmit={handleEditSubmit}>
-              <select
+              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Name</div>
+              <input
+                type="text"
                 required
-                value={editForm.field}
-                onChange={e => setEditForm(f => ({ ...f, field: e.target.value }))}
-                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', marginBottom: 10, fontSize: 14, boxSizing: 'border-box' }}
+                value={editForm.name}
+                onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', marginBottom: 14, fontSize: 16, boxSizing: 'border-box' }}
+              />
+
+              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Cuisine</div>
+              <select
+                value={editForm.category}
+                onChange={e => setEditForm(f => ({ ...f, category: e.target.value }))}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', marginBottom: 16, fontSize: 14, boxSizing: 'border-box' }}
               >
-                <option value="">What needs updating?</option>
-                <option value="name">Name</option>
-                <option value="address">Address</option>
-                <option value="category">Cuisine / Category</option>
-                <option value="hours">Hours</option>
-                <option value="other">Other</option>
+                <option value="">Select cuisine...</option>
+                {CUISINE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
 
-              <input
-                type="text"
-                required
-                placeholder="Suggested value"
-                value={editForm.value}
-                onChange={e => setEditForm(f => ({ ...f, value: e.target.value }))}
-                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', marginBottom: 10, fontSize: 14, boxSizing: 'border-box' }}
-              />
-
-              <input
-                type="text"
-                placeholder="Notes (optional)"
-                value={editForm.notes}
-                onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}
-                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', marginBottom: 14, fontSize: 14, boxSizing: 'border-box' }}
-              />
-
               {editStatus && (
-                <div style={{ color: editStatus.startsWith('Thanks') ? '#4ECDC4' : '#FFCB05', fontSize: 13, marginBottom: 10 }}>
-                  {editStatus}
-                </div>
+                <div style={{ color: '#FFCB05', fontSize: 13, marginBottom: 10 }}>{editStatus}</div>
               )}
 
               <div style={{ display: 'flex', gap: 8 }}>
@@ -963,7 +949,7 @@ export default function Map() {
                   background: (editSubmitting || getEditLog().length >= 5) ? 'rgba(255,203,5,0.4)' : '#FFCB05',
                   color: '#00274C', border: 'none', borderRadius: 10, fontWeight: 800,
                   cursor: (editSubmitting || getEditLog().length >= 5) ? 'not-allowed' : 'pointer', fontSize: 14,
-                }}>{editSubmitting ? 'Submitting...' : 'Submit'}</button>
+                }}>{editSubmitting ? 'Saving...' : 'Save'}</button>
                 <button type="button" onClick={() => setEditModal(null)} style={{
                   flex: 1, padding: 10, background: 'rgba(255,255,255,0.15)', color: 'white',
                   border: 'none', borderRadius: 10, fontWeight: 600, cursor: 'pointer', fontSize: 14,
