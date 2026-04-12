@@ -74,7 +74,7 @@ export default function Hops() {
   // Fetch current hop
   const fetchHop = useCallback(async () => {
     try {
-      const { data } = await axios.get('${BASE}/api/hops/current', auth);
+      const { data } = await axios.get(`${BASE}/api/hops/current`, auth);
       setHop(data);
     } catch {
       setHop(null);
@@ -243,7 +243,7 @@ export default function Hops() {
 
   // Actions
   const createHop = async () => {
-    const { data } = await axios.post('${BASE}/api/hops', {}, auth);
+    const { data } = await axios.post(`${BASE}/api/hops`, {}, auth);
     setHop(data);
   };
 
@@ -251,7 +251,7 @@ export default function Hops() {
     setSearchQuery('');
     setSearchResults([]);
     try {
-      const { data } = await axios.post('${BASE}/api/hops/current/stops', { spot_id: spot.id }, auth);
+      const { data } = await axios.post(`${BASE}/api/hops/current/stops`, { spot_id: spot.id }, auth);
       setHop(data);
     } catch (err) {
       showToast(err.response?.data?.error || 'Could not add stop', 'error');
@@ -267,7 +267,7 @@ export default function Hops() {
 
   const startHop = async () => {
     try {
-      const { data } = await axios.post('${BASE}/api/hops/current/start', {}, auth);
+      const { data } = await axios.post(`${BASE}/api/hops/current/start`, {}, auth);
       setHop(data);
     } catch (err) {
       showToast(err.response?.data?.error || 'Could not start hop', 'error');
@@ -300,7 +300,7 @@ export default function Hops() {
 
   const failHop = async () => {
     if (!window.confirm('Abandon this hop? This cannot be undone.')) return;
-    await axios.post('${BASE}/api/hops/current/fail', {}, auth);
+    await axios.post(`${BASE}/api/hops/current/fail`, {}, auth);
     setHop(null);
     setToast(null);
   };

@@ -170,7 +170,7 @@ export default function Map() {
         let transitSteps = null;
         if (parseFloat(distanceMiles) >= WALK_THRESHOLD_MILES) {
           try {
-            const transitRes = await axios.get('${BASE}/api/directions', {
+            const transitRes = await axios.get(`${BASE}/api/directions`, {
               params: { originLat: loc.lat, originLng: loc.lng, destLat: spotLat, destLng: spotLng },
               headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
             });
@@ -271,7 +271,7 @@ export default function Map() {
 
       // Post check-in
       const res = await axios.post(
-        '${BASE}/api/checkins',
+        `${BASE}/api/checkins`,
         { spot_id: spotId, user_lat: pos.coords.latitude, user_lng: pos.coords.longitude, photo_url: photoUrl },
         { headers: { Authorization: `Bearer ${tokenRef.current}` } }
       );
@@ -298,7 +298,7 @@ export default function Map() {
     setSubmitting(true);
     setSubmitStatus('Submitting...');
     try {
-      await axios.post('${BASE}/api/spots/suggest', { ...newSpot, honeypot: newSpot.honeypot || '' }, {
+      await axios.post(`${BASE}/api/spots/suggest`, { ...newSpot, honeypot: newSpot.honeypot || '' }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const updated = [...log, Date.now()];
@@ -439,12 +439,12 @@ export default function Map() {
         map.current.getSource('spots').setData({ type: 'FeatureCollection', features: [] });
         return;
       } else if (mode === 'nearby' && userLocation) {
-        res = await axios.get('${BASE}/api/spots/nearby', {
+        res = await axios.get(`${BASE}/api/spots/nearby`, {
           params: { lat: userLocation.lat, lng: userLocation.lng, radius: 0.5 },
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        res = await axios.get('${BASE}/api/spots');
+        res = await axios.get(`${BASE}/api/spots`);
       }
 
       map.current.getSource('spots').setData({
