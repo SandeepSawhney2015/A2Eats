@@ -13,6 +13,13 @@ export default function Register() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const resetIOSZoom = () => {
+    const meta = document.querySelector('meta[name=viewport]');
+    if (meta) {
+      meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -23,6 +30,7 @@ export default function Register() {
     setLoading(true);
     try {
       const res = await axios.post(`${BASE}/api/auth/register`, { email, password });
+      resetIOSZoom();
       login(res.data.token, res.data.user);
       navigate('/');
     } catch (err) {
@@ -35,7 +43,7 @@ export default function Register() {
   return (
     <div style={{
       minHeight: '100dvh',
-      background: 'linear-gradient(135deg, #00274C 0%, #1a4a7a 50%, #00274C 100%)',
+      background: '#ffffff',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       padding: '24px 24px 48px',
@@ -43,21 +51,19 @@ export default function Register() {
     }}>
       {/* Logo */}
       <img src={logo} alt="A2 Chuds" style={{ width: 100, marginBottom: 8 }} />
-      <div style={{ color: '#FFCB05', fontWeight: 900, fontSize: 26, marginBottom: 4 }}>A2 Chuds</div>
-      <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginBottom: 36 }}>Discover Ann Arbor, one chud at a time.</div>
+      <div style={{ color: '#00274C', fontWeight: 900, fontSize: 26, marginBottom: 4 }}>A2 Chuds</div>
+      <div style={{ color: 'rgba(0,39,76,0.4)', fontSize: 13, marginBottom: 36 }}>Discover Ann Arbor, one chud at a time.</div>
 
       {/* Card */}
       <div style={{
-        background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
+        background: '#00274C',
         borderRadius: 24, padding: '28px 24px', width: '100%', maxWidth: 380,
-        border: '1px solid rgba(255,255,255,0.6)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+        boxShadow: '0 8px 32px rgba(0,39,76,0.18)',
       }}>
-        <div style={{ color: '#00274C', fontWeight: 800, fontSize: 20, marginBottom: 4 }}>Create account</div>
+        <div style={{ color: '#FFCB05', fontWeight: 800, fontSize: 20, marginBottom: 4 }}>Create account</div>
         {email.includes('@') && (
-          <div style={{ color: '#999', fontSize: 12, marginBottom: 16 }}>
-            Username: <span style={{ color: '#00274C', fontWeight: 700 }}>{email.split('@')[0]}</span>
+          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, marginBottom: 16 }}>
+            Username: <span style={{ color: '#FFCB05', fontWeight: 700 }}>{email.split('@')[0]}</span>
           </div>
         )}
         {!email.includes('@') && <div style={{ marginBottom: 20 }} />}
@@ -72,8 +78,8 @@ export default function Register() {
             style={{
               display: 'block', width: '100%', marginBottom: 12,
               padding: '12px 14px', borderRadius: 12,
-              border: '1.5px solid #e0e0e0',
-              background: '#f8f8f8', color: '#00274C',
+              border: '1px solid rgba(255,255,255,0.15)',
+              background: 'rgba(255,255,255,0.1)', color: '#fff',
               fontSize: 16, outline: 'none', boxSizing: 'border-box',
             }}
           />
@@ -86,8 +92,8 @@ export default function Register() {
             style={{
               display: 'block', width: '100%', marginBottom: 20,
               padding: '12px 14px', borderRadius: 12,
-              border: '1.5px solid #e0e0e0',
-              background: '#f8f8f8', color: '#00274C',
+              border: '1px solid rgba(255,255,255,0.15)',
+              background: 'rgba(255,255,255,0.1)', color: '#fff',
               fontSize: 16, outline: 'none', boxSizing: 'border-box',
             }}
           />
@@ -111,9 +117,9 @@ export default function Register() {
         </form>
       </div>
 
-      <p style={{ marginTop: 24, color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>
+      <p style={{ marginTop: 24, color: 'rgba(0,39,76,0.4)', fontSize: 13 }}>
         Already have an account?{' '}
-        <Link to="/login" style={{ color: '#FFCB05', fontWeight: 700, textDecoration: 'none' }}>
+        <Link to="/login" style={{ color: '#00274C', fontWeight: 700, textDecoration: 'none' }}>
           Sign in
         </Link>
       </p>

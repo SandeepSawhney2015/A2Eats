@@ -13,12 +13,20 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const resetIOSZoom = () => {
+    const meta = document.querySelector('meta[name=viewport]');
+    if (meta) {
+      meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
       const res = await axios.post(`${BASE}/api/auth/login`, { email, password });
+      resetIOSZoom();
       login(res.data.token, res.data.user);
       navigate('/');
     } catch (err) {
@@ -30,7 +38,8 @@ export default function Login() {
 
   return (
     <div style={{
-      minHeight: '100dvh', background: '#00274C',
+      minHeight: '100dvh',
+      background: '#ffffff',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       padding: '24px 24px 48px',
@@ -38,16 +47,16 @@ export default function Login() {
     }}>
       {/* Logo */}
       <img src={logo} alt="A2 Chuds" style={{ width: 100, marginBottom: 8 }} />
-      <div style={{ color: '#FFCB05', fontWeight: 900, fontSize: 26, marginBottom: 4 }}>A2 Chuds</div>
-      <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginBottom: 36 }}>Discover Ann Arbor, one chud at a time.</div>
+      <div style={{ color: '#00274C', fontWeight: 900, fontSize: 26, marginBottom: 4 }}>A2 Chuds</div>
+      <div style={{ color: 'rgba(0,39,76,0.4)', fontSize: 13, marginBottom: 36 }}>Discover Ann Arbor, one chud at a time.</div>
 
       {/* Card */}
       <div style={{
-        background: 'rgba(255,255,255,0.06)', borderRadius: 24,
-        padding: '28px 24px', width: '100%', maxWidth: 380,
-        border: '1px solid rgba(255,255,255,0.1)',
+        background: '#00274C',
+        borderRadius: 24, padding: '28px 24px', width: '100%', maxWidth: 380,
+        boxShadow: '0 8px 32px rgba(0,39,76,0.18)',
       }}>
-        <div style={{ color: '#fff', fontWeight: 800, fontSize: 20, marginBottom: 20 }}>Sign in</div>
+        <div style={{ color: '#FFCB05', fontWeight: 800, fontSize: 20, marginBottom: 20 }}>Sign in</div>
 
         <form onSubmit={handleSubmit}>
           <input
@@ -58,7 +67,8 @@ export default function Login() {
             required
             style={{
               display: 'block', width: '100%', marginBottom: 12,
-              padding: '12px 14px', borderRadius: 12, border: 'none',
+              padding: '12px 14px', borderRadius: 12,
+              border: '1px solid rgba(255,255,255,0.15)',
               background: 'rgba(255,255,255,0.1)', color: '#fff',
               fontSize: 16, outline: 'none', boxSizing: 'border-box',
             }}
@@ -71,7 +81,8 @@ export default function Login() {
             required
             style={{
               display: 'block', width: '100%', marginBottom: 20,
-              padding: '12px 14px', borderRadius: 12, border: 'none',
+              padding: '12px 14px', borderRadius: 12,
+              border: '1px solid rgba(255,255,255,0.15)',
               background: 'rgba(255,255,255,0.1)', color: '#fff',
               fontSize: 16, outline: 'none', boxSizing: 'border-box',
             }}
@@ -96,9 +107,9 @@ export default function Login() {
         </form>
       </div>
 
-      <p style={{ marginTop: 24, color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>
+      <p style={{ marginTop: 24, color: 'rgba(0,39,76,0.4)', fontSize: 13 }}>
         Don't have an account?{' '}
-        <Link to="/register" style={{ color: '#FFCB05', fontWeight: 700, textDecoration: 'none' }}>
+        <Link to="/register" style={{ color: '#00274C', fontWeight: 700, textDecoration: 'none' }}>
           Register
         </Link>
       </p>
