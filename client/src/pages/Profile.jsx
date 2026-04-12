@@ -299,11 +299,13 @@ export default function Profile() {
             {/* Logout */}
             <button
               onClick={() => { logout(); navigate('/login'); }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#FF3B30'; e.currentTarget.style.borderColor = '#FF3B30'; e.currentTarget.style.color = '#fff'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = '#e0e0e0'; e.currentTarget.style.color = '#999'; }}
               style={{
                 marginTop: 32, width: '100%', padding: '12px 0',
                 background: 'none', border: '1.5px solid #e0e0e0',
                 borderRadius: 14, color: '#999', fontWeight: 700,
-                fontSize: 14, cursor: 'pointer',
+                fontSize: 14, cursor: 'pointer', transition: 'all 0.15s ease',
               }}
             >
               Log out
