@@ -469,6 +469,7 @@ export default function Map() {
       style: 'mapbox://styles/ssawhney/cmnuodf9w007p01s7awrha0jw/draft',
       center: [ANN_ARBOR.lng, ANN_ARBOR.lat],
       zoom: 14,
+      maxBounds: [[-83.90, 42.18], [-83.55, 42.42]],
     });
 
     map.current.addControl(new mapboxgl.NavigationControl());
