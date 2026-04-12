@@ -15,6 +15,14 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: { error: 'Too many registration attempts. Try again in an hour.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 async function verifyTurnstile(token) {
   const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
     method: 'POST',
@@ -29,7 +37,7 @@ function containsHTML(str) {
   return typeof str === 'string' && /<[^>]*>/.test(str);
 }
 
-router.post('/register', async (req, res) => {
+router.post('/register', registerLimiter, async (req, res) => {
   const { email, password, turnstileToken } = req.body;
 
   if (containsHTML(email) || containsHTML(password)) {
