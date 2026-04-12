@@ -50,6 +50,7 @@ export default function Map() {
   const map = useRef(null);
   const userLocationRef = useRef(null);
   const activePopupRef = useRef(null);
+  const routeAnimRef = useRef(null);
   const [mapReady, setMapReady] = useState(false);
   const [mode, setMode] = useState('all');
   const [userLocation, setUserLocation] = useState(null);
@@ -95,6 +96,10 @@ export default function Map() {
   ];
 
   const clearRoute = () => {
+    if (routeAnimRef.current) {
+      cancelAnimationFrame(routeAnimRef.current);
+      routeAnimRef.current = null;
+    }
     if (map.current?.getSource('route')) {
       map.current.getSource('route').setData({ type: 'FeatureCollection', features: [] });
     }
@@ -153,13 +158,17 @@ export default function Map() {
             type: 'Feature',
             geometry: { type: 'LineString', coordinates: partial },
           });
-          if (progress < 1) requestAnimationFrame(drawRoute);
+          if (progress < 1) {
+            routeAnimRef.current = requestAnimationFrame(drawRoute);
+          } else {
+            routeAnimRef.current = null;
+          }
         };
         map.current.getSource('route').setData({
           type: 'Feature',
           geometry: { type: 'LineString', coordinates: [coords[0], coords[0]] },
         });
-        requestAnimationFrame(drawRoute);
+        routeAnimRef.current = requestAnimationFrame(drawRoute);
 
         const bounds = new mapboxgl.LngLatBounds()
           .extend([loc.lng, loc.lat])
