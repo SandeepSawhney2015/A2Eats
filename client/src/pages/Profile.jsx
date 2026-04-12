@@ -186,69 +186,131 @@ export default function Profile() {
               background: '#00274C', borderRadius: 24, padding: isMobile ? '20px 20px' : 28,
               marginBottom: 24, boxShadow: '0 4px 20px rgba(0,39,76,0.15)',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 16 : 24, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
-
-                {/* Avatar — tap to upload */}
-                <div style={{ position: 'relative', flexShrink: 0 }} onClick={() => fileRef.current?.click()}>
-                  {data.user.profile_photo ? (
-                    <img src={data.user.profile_photo} alt="avatar" style={{
-                      width: isMobile ? 72 : 80, height: isMobile ? 72 : 80,
-                      borderRadius: '50%', objectFit: 'cover',
-                      border: '3px solid #FFCB05', cursor: 'pointer',
-                      opacity: uploadingPhoto ? 0.5 : 1,
-                    }} />
-                  ) : (
+              {isMobile ? (
+                /* Mobile: avatar + stats on top row, name + email below */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    {/* Avatar */}
+                    <div style={{ position: 'relative', flexShrink: 0 }} onClick={() => fileRef.current?.click()}>
+                      {data.user.profile_photo ? (
+                        <img src={data.user.profile_photo} alt="avatar" style={{
+                          width: 72, height: 72, borderRadius: '50%', objectFit: 'cover',
+                          border: '3px solid #FFCB05', cursor: 'pointer',
+                          opacity: uploadingPhoto ? 0.5 : 1,
+                        }} />
+                      ) : (
+                        <div style={{
+                          width: 72, height: 72, borderRadius: '50%',
+                          background: '#FFCB05', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 26, fontWeight: 900, color: '#00274C',
+                          cursor: 'pointer', border: '3px solid rgba(255,255,255,0.2)',
+                          opacity: uploadingPhoto ? 0.5 : 1,
+                        }}>
+                          {data.user.name?.[0]?.toUpperCase() || '?'}
+                        </div>
+                      )}
+                      <div style={{
+                        position: 'absolute', bottom: 0, right: 0,
+                        width: 24, height: 24, borderRadius: '50%',
+                        background: '#FFCB05', border: '2px solid #00274C',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 12, cursor: 'pointer',
+                      }}>📷</div>
+                      <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoChange} />
+                    </div>
+                    {/* Stats pushed to right */}
+                    <div style={{ display: 'flex', gap: 16, marginLeft: 'auto' }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ color: '#FFCB05', fontWeight: 900, fontSize: 22 }}>
+                          {Number(data.user.chud_points).toLocaleString()}
+                        </div>
+                        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                          Chow Pts
+                        </div>
+                      </div>
+                      <div style={{ width: 1, background: 'rgba(255,255,255,0.1)' }} />
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ color: '#FFCB05', fontWeight: 900, fontSize: 22 }}>
+                          {ordinal(parseInt(data.user.rank))}
+                        </div>
+                        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                          in A2
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Name + email full width below */}
+                  <div>
+                    <div style={{ color: '#FFCB05', fontWeight: 900, fontSize: 22 }}>
+                      {data.user.name}
+                    </div>
+                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {data.user.email}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Desktop: single row */
+                <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+                  {/* Avatar */}
+                  <div style={{ position: 'relative', flexShrink: 0 }} onClick={() => fileRef.current?.click()}>
+                    {data.user.profile_photo ? (
+                      <img src={data.user.profile_photo} alt="avatar" style={{
+                        width: 80, height: 80, borderRadius: '50%', objectFit: 'cover',
+                        border: '3px solid #FFCB05', cursor: 'pointer',
+                        opacity: uploadingPhoto ? 0.5 : 1,
+                      }} />
+                    ) : (
+                      <div style={{
+                        width: 80, height: 80, borderRadius: '50%',
+                        background: '#FFCB05', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 30, fontWeight: 900, color: '#00274C',
+                        cursor: 'pointer', border: '3px solid rgba(255,255,255,0.2)',
+                        opacity: uploadingPhoto ? 0.5 : 1,
+                      }}>
+                        {data.user.name?.[0]?.toUpperCase() || '?'}
+                      </div>
+                    )}
                     <div style={{
-                      width: isMobile ? 72 : 80, height: isMobile ? 72 : 80, borderRadius: '50%',
-                      background: '#FFCB05', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: isMobile ? 26 : 30, fontWeight: 900, color: '#00274C',
-                      cursor: 'pointer', border: '3px solid rgba(255,255,255,0.2)',
-                      opacity: uploadingPhoto ? 0.5 : 1,
-                    }}>
-                      {data.user.name?.[0]?.toUpperCase() || '?'}
-                    </div>
-                  )}
-                  <div style={{
-                    position: 'absolute', bottom: 0, right: 0,
-                    width: 24, height: 24, borderRadius: '50%',
-                    background: '#FFCB05', border: '2px solid #00274C',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 12, cursor: 'pointer',
-                  }}>📷</div>
-                  <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoChange} />
-                </div>
-
-                {/* Name + email */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ color: '#FFCB05', fontWeight: 900, fontSize: isMobile ? 20 : 22, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {data.user.name}
+                      position: 'absolute', bottom: 0, right: 0,
+                      width: 24, height: 24, borderRadius: '50%',
+                      background: '#FFCB05', border: '2px solid #00274C',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 12, cursor: 'pointer',
+                    }}>📷</div>
+                    <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoChange} />
                   </div>
-                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {data.user.email}
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div style={{ display: 'flex', gap: 16, marginLeft: isMobile ? 'auto' : 0 }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ color: '#FFCB05', fontWeight: 900, fontSize: isMobile ? 22 : 26 }}>
-                      {Number(data.user.chud_points).toLocaleString()}
+                  {/* Name + email */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ color: '#FFCB05', fontWeight: 900, fontSize: 22, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {data.user.name}
                     </div>
-                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                      Chow Pts
+                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {data.user.email}
                     </div>
                   </div>
-                  <div style={{ width: 1, background: 'rgba(255,255,255,0.1)' }} />
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ color: '#FFCB05', fontWeight: 900, fontSize: isMobile ? 22 : 26 }}>
-                      {ordinal(parseInt(data.user.rank))}
+                  {/* Stats */}
+                  <div style={{ display: 'flex', gap: 16 }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ color: '#FFCB05', fontWeight: 900, fontSize: 26 }}>
+                        {Number(data.user.chud_points).toLocaleString()}
+                      </div>
+                      <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                        Chow Pts
+                      </div>
                     </div>
-                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                      in A2
+                    <div style={{ width: 1, background: 'rgba(255,255,255,0.1)' }} />
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ color: '#FFCB05', fontWeight: 900, fontSize: 26 }}>
+                        {ordinal(parseInt(data.user.rank))}
+                      </div>
+                      <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                        in A2
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Grid: pie + recent chows */}
