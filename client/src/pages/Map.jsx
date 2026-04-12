@@ -75,14 +75,6 @@ export default function Map() {
   const [editSubmitting, setEditSubmitting] = useState(false);
   const [editStatus, setEditStatus] = useState('');
 
-  const EDIT_LOG_KEY = `edit_log_${user?.id}`;
-  const ONE_HOUR = 60 * 60 * 1000;
-  const getEditLog = () => {
-    try {
-      const raw = localStorage.getItem(EDIT_LOG_KEY);
-      return (raw ? JSON.parse(raw) : []).filter(t => Date.now() - t < ONE_HOUR);
-    } catch { return []; }
-  };
   const placeSearchRef = useRef(null);
   const autocompleteRef = useRef(null);
   const addressInputRef = useRef(null);
@@ -91,6 +83,14 @@ export default function Map() {
 
   const SUGGESTION_KEY = `suggestion_log_${user?.id}`;
   const ONE_DAY = 24 * 60 * 60 * 1000;
+  const EDIT_LOG_KEY = `edit_log_${user?.id}`;
+  const ONE_HOUR = 60 * 60 * 1000;
+  const getEditLog = () => {
+    try {
+      const raw = localStorage.getItem(EDIT_LOG_KEY);
+      return (raw ? JSON.parse(raw) : []).filter(t => Date.now() - t < ONE_HOUR);
+    } catch { return []; }
+  };
 
   // Keep refs in sync
   useEffect(() => { userLocationRef.current = userLocation; }, [userLocation]);
