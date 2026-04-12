@@ -202,6 +202,16 @@ export default function Hops() {
     if (mapReadyRef.current) refreshMarkers(null, hop);
   }, [hop, refreshMarkers]);
 
+  // Resize map when it becomes visible (was display:none while no hop)
+  const isBuilding = hop?.status === 'building';
+  const isActive = hop?.status === 'active';
+  const showMap = isBuilding || isActive;
+  useEffect(() => {
+    if (showMap && mapRef.current) {
+      setTimeout(() => mapRef.current?.resize(), 50);
+    }
+  }, [showMap]);
+
   const drawRoute = async (stops) => {
     if (!mapRef.current || !mapReadyRef.current) return;
     const waypoints = userLocRef.current
@@ -318,10 +328,7 @@ export default function Hops() {
     </div>
   );
 
-  const isBuilding = hop?.status === 'building';
-  const isActive = hop?.status === 'active';
   const isCompleted = hop?.status === 'completed';
-  const showMap = isBuilding || isActive;
 
   // Which stop is next to complete
   const nextStop = isActive ? hop.stops.find(s => !s.checked_in_at) : null;
