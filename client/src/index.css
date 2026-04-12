@@ -50,7 +50,7 @@ html, body, #root {
 
 @media (max-width: 767px) {
   .directions-panel { bottom: calc(120px + env(safe-area-inset-bottom, 20px)) !important; }
-  .add-spot-btn { bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important; }
+  .add-spot-btn { bottom: calc(120px + env(safe-area-inset-bottom, 0px)) !important; }
 }
 
 @keyframes hopMarkerPulse {
