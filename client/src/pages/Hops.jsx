@@ -410,7 +410,7 @@ export default function Hops() {
 
           {/* ── Building ── */}
           {isBuilding && (
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, justifyContent: (isMobile && searchFocused) ? 'flex-end' : 'flex-start' }}>
 
               {/* Header — hidden when search focused on mobile */}
               {!(isMobile && searchFocused) && (
