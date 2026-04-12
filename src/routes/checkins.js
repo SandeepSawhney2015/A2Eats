@@ -7,7 +7,8 @@ const router = express.Router();
 const BASE_POINTS = 10;
 const DOUBLE_CHUD_POINTS = 3;
 
-const CHECKIN_RADIUS_MILES = 0.2; // must be within ~1000 feet of the spot
+const CHECKIN_RADIUS_MILES = 0.05; // ~265 feet — tight enough to require being at the spot, forgiving for GPS drift
+const GLOBAL_CHECKIN_COOLDOWN_MS = 30 * 60 * 1000; // 30 min between any check-ins, prevents cluster farming
 
 function isValidPhotoUrl(url) {
   if (!url) return true; // optional field
@@ -53,6 +54,21 @@ router.post('/', requireAuth, async (req, res) => {
       return res.status(403).json({
         error: `You're ${(distance * 5280).toFixed(0)} ft away — you need to be at the restaurant to check in.`
       });
+    }
+
+    // Global cooldown — prevent farming a cluster of nearby spots
+    const lastAny = await pool.query(
+      'SELECT created_at FROM check_ins WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1',
+      [req.userId]
+    );
+    if (lastAny.rows.length > 0) {
+      const msSinceLast = Date.now() - new Date(lastAny.rows[0].created_at).getTime();
+      if (msSinceLast < GLOBAL_CHECKIN_COOLDOWN_MS) {
+        const minsLeft = Math.ceil((GLOBAL_CHECKIN_COOLDOWN_MS - msSinceLast) / 60000);
+        return res.status(429).json({
+          error: `You just checked in somewhere. Wait ${minsLeft} minute${minsLeft !== 1 ? 's' : ''} before checking in again.`
+        });
+      }
     }
 
     // Check previous check-ins at this spot
