@@ -412,123 +412,114 @@ export default function Hops() {
           {isBuilding && (
             <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
 
-              {/* Search-focused mode: full-screen search on mobile */}
-              {isMobile && searchFocused ? (
-                <>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                    <div style={{ position: 'relative', flex: 1 }}>
-                      <input
-                        autoFocus
-                        type="text"
-                        placeholder="Search for a restaurant..."
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                        onFocus={() => setSearchFocused(true)}
-                        onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
-                        style={{
-                          width: '100%', padding: '10px 14px', borderRadius: 12,
-                          border: '1.5px solid #00274C', fontSize: 16, outline: 'none',
-                          boxSizing: 'border-box',
-                        }}
-                      />
-                    </div>
-                    <button
-                      onMouseDown={() => { setSearchQuery(''); setSearchResults([]); setSearchFocused(false); }}
-                      style={{ background: 'none', border: 'none', color: '#00274C', fontWeight: 700, fontSize: 14, cursor: 'pointer', whiteSpace: 'nowrap' }}
-                    >Cancel</button>
-                  </div>
-                  <div style={{ flex: 1, overflowY: 'auto' }}>
-                    {searchResults.map(spot => (
-                      <div key={spot.id} onMouseDown={() => addStop(spot)} style={{
-                        padding: '12px 4px', borderBottom: '1px solid #f0f0f0', cursor: 'pointer',
-                      }}>
-                        <div style={{ fontWeight: 700, fontSize: 14, color: '#00274C' }}>{spot.name}</div>
-                        <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>{spot.address}</div>
-                      </div>
-                    ))}
-                    {searchQuery.length > 1 && searchResults.length === 0 && (
-                      <div style={{ color: '#bbb', textAlign: 'center', padding: '32px 0', fontSize: 13 }}>No results found</div>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div style={{ color: '#00274C', fontWeight: 900, fontSize: 18, marginBottom: 12 }}>Plan Your Hop</div>
+              {/* Header — hidden when search focused on mobile */}
+              {!(isMobile && searchFocused) && (
+                <div style={{ color: '#00274C', fontWeight: 900, fontSize: 18, marginBottom: 12, flexShrink: 0 }}>Plan Your Hop</div>
+              )}
 
-                  {/* Scrollable stop list */}
-                  <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, marginBottom: 12 }}>
-                    {hop.stops.length === 0 ? (
-                      <div style={{ color: '#bbb', fontSize: 13, textAlign: 'center', padding: '32px 0' }}>
-                        Search below to add your first stop
-                      </div>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {hop.stops.map((stop, i) => (
-                          <div key={stop.id} style={{
-                            display: 'flex', alignItems: 'center', gap: 10,
-                            background: '#f8f8f8', borderRadius: 12, padding: '10px 12px',
-                          }}>
-                            <div style={{
-                              width: 28, height: 28, borderRadius: '50%', background: '#00274C',
-                              color: '#FFCB05', fontWeight: 800, fontSize: 12,
-                              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                            }}>{i + 1}</div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontWeight: 700, fontSize: 13, color: '#00274C', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stop.name}</div>
-                              <div style={{ fontSize: 11, color: '#999', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stop.address}</div>
-                            </div>
-                            <button onClick={() => removeStop(stop.id)} style={{
-                              background: 'none', border: 'none', color: '#ccc', fontSize: 18,
-                              cursor: 'pointer', flexShrink: 0, padding: 0, lineHeight: 1,
-                            }}>✕</button>
+              {/* Scrollable stop list — hidden when search focused on mobile */}
+              {!(isMobile && searchFocused) && (
+                <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, marginBottom: 12 }}>
+                  {hop.stops.length === 0 ? (
+                    <div style={{ color: '#bbb', fontSize: 13, textAlign: 'center', padding: '32px 0' }}>
+                      Search below to add your first stop
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {hop.stops.map((stop, i) => (
+                        <div key={stop.id} style={{
+                          display: 'flex', alignItems: 'center', gap: 10,
+                          background: '#f8f8f8', borderRadius: 12, padding: '10px 12px',
+                        }}>
+                          <div style={{
+                            width: 28, height: 28, borderRadius: '50%', background: '#00274C',
+                            color: '#FFCB05', fontWeight: 800, fontSize: 12,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                          }}>{i + 1}</div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 700, fontSize: 13, color: '#00274C', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stop.name}</div>
+                            <div style={{ fontSize: 11, color: '#999', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stop.address}</div>
+                          </div>
+                          <button onClick={() => removeStop(stop.id)} style={{
+                            background: 'none', border: 'none', color: '#ccc', fontSize: 18,
+                            cursor: 'pointer', flexShrink: 0, padding: 0, lineHeight: 1,
+                          }}>✕</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Mobile search results overlay — shown when focused */}
+              {isMobile && searchFocused && (
+                <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, marginBottom: 12 }}>
+                  {searchResults.map(spot => (
+                    <div key={spot.id} onMouseDown={() => addStop(spot)} style={{
+                      padding: '12px 4px', borderBottom: '1px solid #f0f0f0', cursor: 'pointer',
+                    }}>
+                      <div style={{ fontWeight: 700, fontSize: 14, color: '#00274C' }}>{spot.name}</div>
+                      <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>{spot.address}</div>
+                    </div>
+                  ))}
+                  {searchQuery.length > 1 && searchResults.length === 0 && (
+                    <div style={{ color: '#bbb', textAlign: 'center', padding: '32px 0', fontSize: 13 }}>No results found</div>
+                  )}
+                </div>
+              )}
+
+              {/* Search + Start — pinned at bottom, single persistent input */}
+              <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: 12, flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: isMobile && searchFocused ? 0 : 10 }}>
+                  <div style={{ position: 'relative', flex: 1 }}>
+                    <input
+                      type="text"
+                      placeholder="Search for a restaurant..."
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      onFocus={() => isMobile && setSearchFocused(true)}
+                      onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
+                      style={{
+                        width: '100%', padding: '10px 14px', borderRadius: 12,
+                        border: `1.5px solid ${searchFocused ? '#00274C' : '#e0e0e0'}`,
+                        fontSize: 16, outline: 'none', boxSizing: 'border-box',
+                      }}
+                    />
+                    {/* Desktop dropdown */}
+                    {!isMobile && searchResults.length > 0 && (
+                      <div style={{
+                        position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50,
+                        background: '#fff', borderRadius: 12, marginTop: 4,
+                        boxShadow: '0 4px 24px rgba(0,0,0,0.14)',
+                        maxHeight: 220, overflowY: 'auto', border: '1px solid #f0f0f0',
+                      }}>
+                        {searchResults.map(spot => (
+                          <div key={spot.id} onClick={() => addStop(spot)} style={{
+                            padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid #f5f5f5',
+                          }}
+                            onMouseEnter={e => e.currentTarget.style.background = '#f9f9f9'}
+                            onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+                          >
+                            <div style={{ fontWeight: 700, fontSize: 13, color: '#00274C' }}>{spot.name}</div>
+                            <div style={{ fontSize: 11, color: '#999', marginTop: 1 }}>{spot.address}</div>
                           </div>
                         ))}
                       </div>
                     )}
                   </div>
+                  {isMobile && searchFocused && (
+                    <button
+                      onMouseDown={() => { setSearchQuery(''); setSearchResults([]); setSearchFocused(false); }}
+                      style={{ background: 'none', border: 'none', color: '#00274C', fontWeight: 700, fontSize: 14, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                    >Cancel</button>
+                  )}
+                </div>
 
-                  {/* Search + Start — pinned near bottom */}
-                  <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: 12 }}>
-                    <div style={{ position: 'relative', marginBottom: 10 }}>
-                      <input
-                        type="text"
-                        placeholder="Search for a restaurant..."
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                        onFocus={() => isMobile && setSearchFocused(true)}
-                        style={{
-                          width: '100%', padding: '10px 14px', borderRadius: 12,
-                          border: '1.5px solid #e0e0e0', fontSize: 16, outline: 'none',
-                          boxSizing: 'border-box',
-                        }}
-                      />
-                      {/* Desktop dropdown */}
-                      {!isMobile && searchResults.length > 0 && (
-                        <div style={{
-                          position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50,
-                          background: '#fff', borderRadius: 12, marginTop: 4,
-                          boxShadow: '0 4px 24px rgba(0,0,0,0.14)',
-                          maxHeight: 220, overflowY: 'auto', border: '1px solid #f0f0f0',
-                        }}>
-                          {searchResults.map(spot => (
-                            <div key={spot.id} onClick={() => addStop(spot)} style={{
-                              padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid #f5f5f5',
-                            }}
-                              onMouseEnter={e => e.currentTarget.style.background = '#f9f9f9'}
-                              onMouseLeave={e => e.currentTarget.style.background = '#fff'}
-                            >
-                              <div style={{ fontWeight: 700, fontSize: 13, color: '#00274C' }}>{spot.name}</div>
-                              <div style={{ fontSize: 11, color: '#999', marginTop: 1 }}>{spot.address}</div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
+                {!(isMobile && searchFocused) && (
+                  <>
                     <div style={{ color: '#bbb', fontSize: 11, textAlign: 'center', marginBottom: 10 }}>
                       {hop.stops.length < 2 ? `Add ${2 - hop.stops.length} more stop${hop.stops.length === 1 ? '' : 's'} to start` : `${hop.stops.length} stops ready`}
                     </div>
-
                     <button
                       onClick={startHop}
                       disabled={hop.stops.length < 2}
@@ -540,9 +531,9 @@ export default function Hops() {
                         width: '100%',
                       }}
                     >Start Hop 🍺</button>
-                  </div>
-                </>
-              )}
+                  </>
+                )}
+              </div>
             </div>
           )}
 
