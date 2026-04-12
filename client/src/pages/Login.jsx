@@ -15,6 +15,7 @@ export default function Login() {
   const widgetIdRef = useRef(null);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const isReturning = !!localStorage.getItem('hasLoggedIn');
 
   useEffect(() => {
     const render = () => {
@@ -71,6 +72,7 @@ export default function Login() {
     try {
       const res = await axios.post(`${BASE}/api/auth/login`, { email, password, turnstileToken });
       resetIOSZoom();
+      localStorage.setItem('hasLoggedIn', '1');
       login(res.data.token, res.data.user);
       navigate('/');
     } catch (err) {
@@ -156,12 +158,24 @@ export default function Login() {
         </form>
       </div>
 
-      <p style={{ marginTop: 24, color: 'rgba(0,39,76,0.4)', fontSize: 13 }}>
-        Don't have an account?{' '}
-        <Link to="/register" style={{ color: '#00274C', fontWeight: 700, textDecoration: 'none' }}>
-          Register
+      {isReturning ? (
+        <p style={{ marginTop: 20, color: 'rgba(0,39,76,0.4)', fontSize: 13, textAlign: 'center' }}>
+          New here?{' '}
+          <Link to="/register" style={{ color: '#00274C', fontWeight: 700, textDecoration: 'none' }}>
+            Create an account
+          </Link>
+        </p>
+      ) : (
+        <Link to="/register" style={{
+          marginTop: 16, width: '100%', maxWidth: 380,
+          display: 'block', padding: '13px 0', borderRadius: 14,
+          background: '#00274C', color: '#FFCB05',
+          fontWeight: 800, fontSize: 16, textAlign: 'center',
+          textDecoration: 'none', boxShadow: '0 4px 16px rgba(0,39,76,0.2)',
+        }}>
+          New? Create an account
         </Link>
-      </p>
+      )}
     </div>
   );
 }

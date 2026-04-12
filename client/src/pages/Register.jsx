@@ -67,6 +67,18 @@ export default function Register() {
       setError('Must use a @umich.edu email');
       return;
     }
+    if (password.length < 16) {
+      setError('Password must be at least 16 characters.');
+      return;
+    }
+    if (!/[A-Z]/.test(password)) {
+      setError('Password must contain at least one capital letter.');
+      return;
+    }
+    if (!/[$!]/.test(password)) {
+      setError('Password must contain at least one $ or !');
+      return;
+    }
     if (siteKey && !turnstileToken) {
       setError('Please complete the security check.');
       return;
@@ -143,6 +155,10 @@ export default function Register() {
               fontSize: 16, outline: 'none', boxSizing: 'border-box',
             }}
           />
+
+          <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, marginTop: -10, marginBottom: 16, lineHeight: 1.5 }}>
+            16+ characters · one capital letter · one $ or !
+          </div>
 
           {siteKey && <div ref={turnstileRef} style={{ marginBottom: 16 }} />}
 

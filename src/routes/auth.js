@@ -38,6 +38,10 @@ router.post('/register', async (req, res) => {
     return res.status(400).json({ error: 'Must use a @umich.edu email' });
   }
 
+  if (password.length < 16 || !/[A-Z]/.test(password) || !/[$!]/.test(password)) {
+    return res.status(400).json({ error: 'Password must be 16+ characters with a capital letter and $ or !' });
+  }
+
   // Derive username from everything before the @, preserving casing
   const name = email.split('@')[0];
 
