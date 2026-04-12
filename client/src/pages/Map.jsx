@@ -3,7 +3,7 @@ import mapboxgl from 'mapbox-gl';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import BASE from '../api';
-import { IoMap, IoTrophy, IoBeer, IoPerson } from 'react-icons/io5';
+import { IoMap, IoTrophy, IoBeer, IoPerson, IoLogoGithub } from 'react-icons/io5';
 import logo from '../assets/logo.png';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -646,6 +646,20 @@ export default function Map() {
             {item.label}
           </a>
         ))}
+        <a href="https://github.com/SandeepSawhney2015/A2Chuds" target="_blank" rel="noopener noreferrer"
+          style={{
+            marginTop: 'auto', marginBottom: 16,
+            width: 48, height: 48, borderRadius: 12,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            textDecoration: 'none', color: '#00274C', opacity: 0.4,
+            border: '1px solid transparent',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.opacity = 1; e.currentTarget.style.background = 'rgba(0,39,76,0.08)'; }}
+          onMouseLeave={e => { e.currentTarget.style.opacity = 0.4; e.currentTarget.style.background = 'transparent'; }}
+          title="GitHub"
+        >
+          <IoLogoGithub size={22} />
+        </a>
       </div>
 
       {/* Top toggle */}
