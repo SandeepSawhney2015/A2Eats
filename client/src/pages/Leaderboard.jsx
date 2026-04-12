@@ -20,7 +20,7 @@ export default function Leaderboard() {
         display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 24, gap: 8,
         position: 'sticky', top: 0, height: '100vh',
       }}>
-        <img src={logo} alt="A2 Chuds" style={{ width: 48, marginBottom: 16 }} />
+        <img src={logo} alt="A2 Chuds" style={{ width: 68, marginBottom: 16 }} />
         {NAV.map(item => (
           <a key={item.page} href={`/${item.page === 'map' ? '' : item.page}`} style={{
             width: 48, height: 48, borderRadius: 12,
