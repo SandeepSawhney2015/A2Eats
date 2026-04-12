@@ -56,7 +56,7 @@ export default function Register() {
 
       {/* Card */}
       <div style={{
-        background: '#00274C',
+        background: '#1a4a7a',
         borderRadius: 24, padding: '28px 24px', width: '100%', maxWidth: 380,
         boxShadow: '0 8px 32px rgba(0,39,76,0.18)',
       }}>
