@@ -3,15 +3,6 @@ cmds = ["npm install"]
 
 [phases.build]
 cmds = ["npm run build"]
-dependsOn = ["install"]
-
-[variables]
-VITE_MAPBOX_TOKEN = ""
-VITE_CLOUDINARY_CLOUD_NAME = ""
-VITE_CLOUDINARY_UPLOAD_PRESET = ""
-VITE_API_URL = ""
-VITE_GOOGLE_PLACES_API_KEY = ""
-VITE_TURNSTILE_SITE_KEY = ""
 
 [start]
 cmd = "npx serve dist --single"
