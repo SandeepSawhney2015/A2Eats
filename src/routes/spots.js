@@ -166,11 +166,11 @@ router.get('/search', async (req, res) => {
   }
 });
 
-// Edit a spot's name and/or category (immediate, rate limited to 5/hour)
+// Edit a spot's category (immediate, rate limited to 5/hour)
 router.patch('/:id/edit', requireAuth, async (req, res) => {
-  const { name, category } = req.body;
-  if (!name?.trim() && !category?.trim()) {
-    return res.status(400).json({ error: 'name or category is required' });
+  const { category } = req.body;
+  if (!category?.trim()) {
+    return res.status(400).json({ error: 'category is required' });
   }
 
   const now = Date.now();
@@ -184,14 +184,10 @@ router.patch('/:id/edit', requireAuth, async (req, res) => {
   if (!spot.rows.length) return res.status(404).json({ error: 'Spot not found' });
 
   try {
-    const fields = [];
-    const values = [];
-    if (name?.trim()) { fields.push(`name = $${fields.length + 1}`); values.push(name.trim()); }
-    if (category?.trim()) { fields.push(`category = $${fields.length + 1}`); values.push(category.trim()); }
-    values.push(req.params.id);
+    const values = [category.trim(), req.params.id];
 
     const result = await pool.query(
-      `UPDATE spots SET ${fields.join(', ')} WHERE id = $${values.length} RETURNING *`,
+      `UPDATE spots SET category = $1 WHERE id = $2 RETURNING *`,
       values
     );
     userLog.push(now);

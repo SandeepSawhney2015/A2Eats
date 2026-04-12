@@ -438,15 +438,11 @@ export default function Map() {
       setEditStatus('Limit reached (5/hour). Try again later.');
       return;
     }
-    if (!editForm.name.trim()) {
-      setEditStatus('Name cannot be empty.');
-      return;
-    }
     setEditSubmitting(true);
     setEditStatus('');
     try {
       await axios.patch(`${BASE}/api/spots/${editModal.spotId}/edit`,
-        { name: editForm.name, category: editForm.category },
+        { category: editForm.category },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const updated = [...log, Date.now()];
@@ -932,18 +928,10 @@ export default function Map() {
             width: 320, boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
             fontFamily: 'system-ui, sans-serif',
           }}>
-            <div style={{ color: '#FFCB05', fontWeight: 800, fontSize: 18, marginBottom: 16 }}>Edit Spot</div>
+            <div style={{ color: '#FFCB05', fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Edit Cuisine</div>
+            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, marginBottom: 16 }}>{editModal.spotName}</div>
 
             <form onSubmit={handleEditSubmit}>
-              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Name</div>
-              <input
-                type="text"
-                required
-                value={editForm.name}
-                onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
-                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', marginBottom: 14, fontSize: 16, boxSizing: 'border-box' }}
-              />
-
               <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Cuisine</div>
               <select
                 value={editForm.category}
