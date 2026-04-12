@@ -1,10 +1,16 @@
 const express = require('express');
 const axios = require('axios');
 const requireAuth = require('../middleware/auth');
+const { checkRateLimit } = require('../db/rateLimit');
 
 const router = express.Router();
 
 router.get('/', requireAuth, async (req, res) => {
+  const { limited } = await checkRateLimit(`directions:${req.userId}`, 30, 60 * 60 * 1000);
+  if (limited) {
+    return res.status(429).json({ error: 'Too many directions requests. Try again later.' });
+  }
+
   const { originLat, originLng, destLat, destLng } = req.query;
 
   if (!originLat || !originLng || !destLat || !destLng) {

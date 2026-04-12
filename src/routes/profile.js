@@ -50,9 +50,19 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
+function isValidPhotoUrl(url) {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:' && url.length <= 2048;
+  } catch {
+    return false;
+  }
+}
+
 router.patch('/photo', requireAuth, async (req, res) => {
   const { photo_url } = req.body;
   if (!photo_url) return res.status(400).json({ error: 'photo_url required' });
+  if (!isValidPhotoUrl(photo_url)) return res.status(400).json({ error: 'Invalid photo URL.' });
   try {
     await pool.query('UPDATE users SET profile_photo = $1 WHERE id = $2', [photo_url, req.userId]);
     res.json({ success: true });

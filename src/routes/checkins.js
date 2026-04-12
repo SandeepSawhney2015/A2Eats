@@ -9,6 +9,16 @@ const DOUBLE_CHUD_POINTS = 3;
 
 const CHECKIN_RADIUS_MILES = 0.2; // must be within ~1000 feet of the spot
 
+function isValidPhotoUrl(url) {
+  if (!url) return true; // optional field
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:' && url.length <= 2048;
+  } catch {
+    return false;
+  }
+}
+
 function haversine(lat1, lng1, lat2, lng2) {
   const toRad = d => d * Math.PI / 180;
   const R = 3959; // miles
@@ -25,6 +35,10 @@ router.post('/', requireAuth, async (req, res) => {
 
   if (!spot_id || user_lat == null || user_lng == null) {
     return res.status(400).json({ error: 'spot_id, user_lat, and user_lng are required' });
+  }
+
+  if (!isValidPhotoUrl(photo_url)) {
+    return res.status(400).json({ error: 'Invalid photo URL.' });
   }
 
   try {
