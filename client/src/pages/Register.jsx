@@ -3,11 +3,13 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import BASE from '../api';
+import logo from '../assets/logo.png';
 
 export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -18,49 +20,98 @@ export default function Register() {
       setError('Must use a @umich.edu email');
       return;
     }
+    setLoading(true);
     try {
       const res = await axios.post(`${BASE}/api/auth/register`, { email, password });
       login(res.data.token, res.data.user);
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: '100px auto', padding: 24 }}>
-      <h1>A2 Chuds</h1>
-      <h2>Register</h2>
-      {email.includes('@') && (
-        <p style={{ color: '#666', fontSize: 14, marginBottom: 8 }}>
-          Your username will be <strong>{email.split('@')[0]}</strong>
-        </p>
-      )}
-      <form onSubmit={handleSubmit}>
-        <div>
+    <div style={{
+      minHeight: '100dvh', background: '#00274C',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      padding: '24px 24px 48px',
+      fontFamily: 'system-ui, sans-serif',
+    }}>
+      {/* Logo */}
+      <img src={logo} alt="A2 Chuds" style={{ width: 100, marginBottom: 8 }} />
+      <div style={{ color: '#FFCB05', fontWeight: 900, fontSize: 26, marginBottom: 4 }}>A2 Chuds</div>
+      <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginBottom: 36 }}>Discover Ann Arbor, one chud at a time.</div>
+
+      {/* Card */}
+      <div style={{
+        background: 'rgba(255,255,255,0.06)', borderRadius: 24,
+        padding: '28px 24px', width: '100%', maxWidth: 380,
+        border: '1px solid rgba(255,255,255,0.1)',
+      }}>
+        <div style={{ color: '#fff', fontWeight: 800, fontSize: 20, marginBottom: 4 }}>Create account</div>
+        {email.includes('@') && (
+          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, marginBottom: 16 }}>
+            Username: <span style={{ color: '#FFCB05', fontWeight: 700 }}>{email.split('@')[0]}</span>
+          </div>
+        )}
+        {!email.includes('@') && <div style={{ marginBottom: 20 }} />}
+
+        <form onSubmit={handleSubmit}>
           <input
             type="email"
             placeholder="uniqname@umich.edu"
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
-            style={{ display: 'block', width: '100%', marginBottom: 12, padding: 8, fontSize: 16 }}
+            style={{
+              display: 'block', width: '100%', marginBottom: 12,
+              padding: '12px 14px', borderRadius: 12, border: 'none',
+              background: 'rgba(255,255,255,0.1)', color: '#fff',
+              fontSize: 16, outline: 'none', boxSizing: 'border-box',
+            }}
           />
-        </div>
-        <div>
           <input
             type="password"
-            placeholder="password"
+            placeholder="Password"
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
-            style={{ display: 'block', width: '100%', marginBottom: 12, padding: 8, fontSize: 16 }}
+            style={{
+              display: 'block', width: '100%', marginBottom: 20,
+              padding: '12px 14px', borderRadius: 12, border: 'none',
+              background: 'rgba(255,255,255,0.1)', color: '#fff',
+              fontSize: 16, outline: 'none', boxSizing: 'border-box',
+            }}
           />
-        </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit" style={{ width: '100%', padding: 10 }}>Create Account</button>
-      </form>
-      <p style={{ marginTop: 16 }}>Already have an account? <Link to="/login">Login</Link></p>
+          {error && (
+            <div style={{
+              background: 'rgba(255,59,48,0.15)', border: '1px solid rgba(255,59,48,0.4)',
+              borderRadius: 10, padding: '10px 14px', marginBottom: 16,
+              color: '#FF6B6B', fontSize: 13,
+            }}>{error}</div>
+          )}
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: '100%', padding: '13px 0', borderRadius: 14, border: 'none',
+              background: loading ? 'rgba(255,203,5,0.5)' : '#FFCB05',
+              color: '#00274C', fontWeight: 800, fontSize: 16,
+              cursor: loading ? 'not-allowed' : 'pointer',
+            }}
+          >{loading ? 'Creating account...' : 'Create account'}</button>
+        </form>
+      </div>
+
+      <p style={{ marginTop: 24, color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>
+        Already have an account?{' '}
+        <Link to="/login" style={{ color: '#FFCB05', fontWeight: 700, textDecoration: 'none' }}>
+          Sign in
+        </Link>
+      </p>
     </div>
   );
 }

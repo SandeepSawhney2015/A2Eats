@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useAuth } from '../context/AuthContext';
@@ -43,7 +44,8 @@ const NAV = [
 ];
 
 export default function Profile() {
-  const { token } = useAuth();
+  const { token, logout } = useAuth();
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -293,6 +295,19 @@ export default function Profile() {
               </div>
 
             </div>
+
+            {/* Logout */}
+            <button
+              onClick={() => { logout(); navigate('/login'); }}
+              style={{
+                marginTop: 32, width: '100%', padding: '12px 0',
+                background: 'none', border: '1.5px solid #e0e0e0',
+                borderRadius: 14, color: '#999', fontWeight: 700,
+                fontSize: 14, cursor: 'pointer',
+              }}
+            >
+              Log out
+            </button>
           </>
         )}
       </div>
