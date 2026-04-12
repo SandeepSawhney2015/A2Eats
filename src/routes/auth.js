@@ -1,27 +1,12 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const rateLimit = require('express-rate-limit');
 const pool = require('../db');
 const requireAuth = require('../middleware/auth');
 
 const router = express.Router();
 
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  message: { error: 'Too many login attempts. Try again in 15 minutes.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-const registerLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 5,
-  message: { error: 'Too many registration attempts. Try again in an hour.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+const { checkRateLimit } = require('../db/rateLimit');
 
 async function verifyTurnstile(token) {
   const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
@@ -37,7 +22,7 @@ function containsHTML(str) {
   return typeof str === 'string' && /<[^>]*>/.test(str);
 }
 
-router.post('/register', registerLimiter, async (req, res) => {
+router.post('/register', async (req, res) => {
   const { email, password, turnstileToken } = req.body;
 
   if (containsHTML(email) || containsHTML(password)) {
@@ -78,7 +63,7 @@ router.post('/register', registerLimiter, async (req, res) => {
   }
 });
 
-router.post('/login', loginLimiter, async (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password, turnstileToken } = req.body;
 
   if (containsHTML(email) || containsHTML(password)) {
@@ -87,6 +72,12 @@ router.post('/login', loginLimiter, async (req, res) => {
 
   if (!turnstileToken || !(await verifyTurnstile(turnstileToken))) {
     return res.status(400).json({ error: 'Security check failed. Please try again.' });
+  }
+
+  // Rate limit per email — 10 attempts per 15 min, safe for shared college IPs
+  const { limited } = await checkRateLimit(`login:${email.toLowerCase()}`, 10, 15 * 60 * 1000);
+  if (limited) {
+    return res.status(429).json({ error: 'Too many login attempts for this account. Try again in 15 minutes.' });
   }
 
   try {
