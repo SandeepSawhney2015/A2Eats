@@ -79,8 +79,8 @@ router.post('/suggest', requireAuth, async (req, res) => {
     return res.status(400).json({ error: 'Invalid submission' });
   }
 
-  if (!name || !address || !category || !lat || !lng) {
-    return res.status(400).json({ error: 'Please select a restaurant from the search dropdown.' });
+  if (!name || !address || !category) {
+    return res.status(400).json({ error: 'name, address, and category are required' });
   }
 
   // Rate limiting — max 2 suggestions per user per hour
@@ -101,9 +101,25 @@ router.post('/suggest', requireAuth, async (req, res) => {
   }
 
   try {
+    let finalLat = lat;
+    let finalLng = lng;
+
+    // If no coordinates provided (manual entry), geocode the address
+    if (!finalLat || !finalLng) {
+      const geoRes = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+        params: { address: `${address}, Ann Arbor, MI`, key: process.env.GOOGLE_PLACES_API_KEY }
+      });
+      const geoResult = geoRes.data.results?.[0];
+      if (!geoResult) {
+        return res.status(400).json({ error: 'Could not find coordinates for that address. Try being more specific (e.g. include street number and city).' });
+      }
+      finalLat = geoResult.geometry.location.lat;
+      finalLng = geoResult.geometry.location.lng;
+    }
+
     await pool.query(
       'INSERT INTO spots (name, address, lat, lng, category) VALUES ($1, $2, $3, $4, $5)',
-      [name, address, lat, lng, category]
+      [name, address, finalLat, finalLng, category]
     );
 
     userLog.push(now);

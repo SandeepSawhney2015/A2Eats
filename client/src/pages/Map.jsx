@@ -69,6 +69,7 @@ export default function Map() {
   const [newSpot, setNewSpot] = useState({ name: '', address: '', category: '', lat: null, lng: null, honeypot: '' });
   const [submitStatus, setSubmitStatus] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [manualEntry, setManualEntry] = useState(false);
   const placeSearchRef = useRef(null);
   const autocompleteRef = useRef(null);
   const { token, user } = useAuth();
@@ -348,8 +349,12 @@ export default function Map() {
       setSubmitStatus(`Limit reached. Try again in ${minutesLeft} min.`);
       return;
     }
-    if (!newSpot.lat || !newSpot.lng) {
+    if (!manualEntry && (!newSpot.lat || !newSpot.lng)) {
       setSubmitStatus('Please select a restaurant from the search dropdown.');
+      return;
+    }
+    if (manualEntry && (!newSpot.name || !newSpot.address)) {
+      setSubmitStatus('Please enter both a name and address.');
       return;
     }
     setSubmitting(true);
@@ -362,6 +367,7 @@ export default function Map() {
       localStorage.setItem(SUGGESTION_KEY, JSON.stringify(updated));
       setSubmitStatus('Thanks! We\'ll review and add it soon.');
       setNewSpot({ name: '', address: '', category: '', lat: null, lng: null, honeypot: '' });
+      setManualEntry(false);
       setTimeout(() => { setShowAddSpot(false); setSubmitStatus(''); }, 2000);
     } catch (err) {
       const msg = err.response?.data?.error || 'Failed to submit. Try again.';
@@ -830,20 +836,48 @@ export default function Map() {
                 style={{ display: 'none' }}
               />
 
-              {/* Google Places search */}
-              <input
-                ref={placeSearchRef}
-                type="text"
-                placeholder="Search for a restaurant..."
-                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', marginBottom: 10, fontSize: 14, boxSizing: 'border-box' }}
-              />
+              {!manualEntry ? (
+                <>
+                  {/* Google Places search */}
+                  <input
+                    ref={placeSearchRef}
+                    type="text"
+                    placeholder="Search for a restaurant..."
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', marginBottom: 10, fontSize: 14, boxSizing: 'border-box' }}
+                  />
 
-              {/* Auto-filled name + address preview */}
-              {newSpot.name && (
-                <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 12px', marginBottom: 10 }}>
-                  <div style={{ color: '#FFCB05', fontWeight: 700, fontSize: 13 }}>{newSpot.name}</div>
-                  <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 2 }}>{newSpot.address}</div>
-                </div>
+                  {/* Auto-filled name + address preview */}
+                  {newSpot.name && (
+                    <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 12px', marginBottom: 10 }}>
+                      <div style={{ color: '#FFCB05', fontWeight: 700, fontSize: 13 }}>{newSpot.name}</div>
+                      <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 2 }}>{newSpot.address}</div>
+                    </div>
+                  )}
+
+                  <button type="button" onClick={() => { setManualEntry(true); setNewSpot(prev => ({ ...prev, name: '', address: '', lat: null, lng: null })); }} style={{
+                    background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)',
+                    fontSize: 12, cursor: 'pointer', marginBottom: 10, padding: 0, textDecoration: 'underline',
+                  }}>Can't find it? Enter manually</button>
+                </>
+              ) : (
+                <>
+                  <input
+                    type="text" placeholder="Restaurant name" required
+                    value={newSpot.name}
+                    onChange={e => setNewSpot({ ...newSpot, name: e.target.value })}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', marginBottom: 10, fontSize: 14, boxSizing: 'border-box' }}
+                  />
+                  <input
+                    type="text" placeholder="Full address (e.g. 512 E William St, Ann Arbor, MI)" required
+                    value={newSpot.address}
+                    onChange={e => setNewSpot({ ...newSpot, address: e.target.value })}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', marginBottom: 10, fontSize: 14, boxSizing: 'border-box' }}
+                  />
+                  <button type="button" onClick={() => { setManualEntry(false); setNewSpot(prev => ({ ...prev, name: '', address: '', lat: null, lng: null })); }} style={{
+                    background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)',
+                    fontSize: 12, cursor: 'pointer', marginBottom: 10, padding: 0, textDecoration: 'underline',
+                  }}>← Back to search</button>
+                </>
               )}
 
               <select
