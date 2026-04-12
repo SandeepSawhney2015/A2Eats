@@ -1,12 +1,41 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
-app.use(express.json());
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  : ['http://localhost:5173', 'http://localhost:3000'];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, server-to-server)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+}));
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://challenges.cloudflare.com"],
+      frameSrc: ["https://challenges.cloudflare.com"],
+      connectSrc: ["'self'", "https://api.mapbox.com", "https://events.mapbox.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https:"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      workerSrc: ["blob:"],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+}));
+
+app.use(express.json({ limit: '10kb' }));
 
 const authRoutes = require('./routes/auth');
 const spotsRoutes = require('./routes/spots');
