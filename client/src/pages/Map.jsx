@@ -205,8 +205,15 @@ export default function Map() {
         activePopupRef.current = null;
       }
 
-      const loc = userLocationRef.current;
-      if (!loc) {
+      // Fetch location fresh on every directions request — stored only in this local const,
+      // never written to state or a ref, so it's gone when this function returns.
+      let loc;
+      try {
+        const pos = await new Promise((resolve, reject) =>
+          navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000 })
+        );
+        loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      } catch {
         alert('Location not available. Enable location access and try again.');
         return;
       }
