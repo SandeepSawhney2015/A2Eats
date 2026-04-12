@@ -111,9 +111,9 @@ export default function Register() {
       padding: '24px 24px 48px',
       fontFamily: 'system-ui, sans-serif',
     }}>
-      <img src={logo} alt="A2 Chuds" style={{ width: 100, marginBottom: 8 }} />
-      <div style={{ color: '#00274C', fontWeight: 900, fontSize: 26, marginBottom: 4 }}>A2 Chuds</div>
-      <div style={{ color: 'rgba(0,39,76,0.4)', fontSize: 13, marginBottom: 36 }}>Discover Ann Arbor, one chud at a time.</div>
+      <img src={logo} alt="A2 Chows" style={{ width: 100, marginBottom: 8 }} />
+      <div style={{ color: '#00274C', fontWeight: 900, fontSize: 26, marginBottom: 4 }}>A2 Chows</div>
+      <div style={{ color: 'rgba(0,39,76,0.4)', fontSize: 13, marginBottom: 36 }}>Discover Ann Arbor, one chow at a time.</div>
 
       <div style={{
         background: '#1a4a7a',

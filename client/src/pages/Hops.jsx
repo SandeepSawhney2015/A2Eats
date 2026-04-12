@@ -288,7 +288,7 @@ export default function Hops() {
       if (data.hopCompleted) {
         showToast(`🎉 Hop Complete! +${data.bonusPoints} bonus pts!`, 'success');
       } else {
-        showToast(`+${data.points} pts${data.isDoubleChud ? ' · Double Chud!' : ''}`, 'success');
+        showToast(`+${data.points} pts${data.isDoubleChud ? ' · Double Chow!' : ''}`, 'success');
       }
       await fetchHop();
     } catch (err) {
@@ -336,7 +336,7 @@ export default function Hops() {
         display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 24, gap: 8,
         position: 'sticky', top: 0, height: '100vh',
       }}>
-        <img src={logo} alt="A2 Chuds" style={{ width: 68, marginBottom: 16 }} />
+        <img src={logo} alt="A2 Chows" style={{ width: 68, marginBottom: 16 }} />
         {NAV.map(item => (
           <a key={item.page} href={`/${item.page === 'map' ? '' : item.page}`} style={{
             width: 48, height: 48, borderRadius: 12,
@@ -381,7 +381,7 @@ export default function Hops() {
               <div style={{ fontSize: 56 }}>🍺</div>
               <div style={{ color: '#00274C', fontWeight: 900, fontSize: 22 }}>Plan a Hop</div>
               <div style={{ color: '#999', fontSize: 14, maxWidth: 260 }}>
-                Build a route of 2+ spots, chud at each one, and earn bonus points for completing the full hop.
+                Build a route of 2+ spots, chow at each one, and earn bonus points for completing the full hop.
               </div>
               <button onClick={createHop} style={{
                 marginTop: 12, background: '#00274C', color: '#FFCB05',
@@ -594,7 +594,7 @@ export default function Hops() {
                             </button>
                           )}
                           {done && (
-                            <div style={{ fontSize: 11, color: '#22c55e', fontWeight: 600, marginTop: 4 }}>Chudd ✓</div>
+                            <div style={{ fontSize: 11, color: '#22c55e', fontWeight: 600, marginTop: 4 }}>Chowed ✓</div>
                           )}
                         </div>
                       </div>

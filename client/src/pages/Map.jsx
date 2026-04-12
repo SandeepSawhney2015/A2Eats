@@ -299,14 +299,14 @@ export default function Map() {
           headers: { Authorization: `Bearer ${tokenRef.current}` },
         });
         if (!data.canCheckin) {
-          setCheckinState({ step: 'error', message: `Come back in ${data.hoursLeft} hour${data.hoursLeft !== 1 ? 's' : ''} to Double Chud.` });
+          setCheckinState({ step: 'error', message: `Come back in ${data.hoursLeft} hour${data.hoursLeft !== 1 ? 's' : ''} to Double Chow.` });
           return;
         }
         if (data.isFirstVisit) {
           // First visit — require photo
           setCheckinState({ step: 'photo', spotId, spotName, isFirstVisit: true });
         } else {
-          // Double Chud — skip photo, go straight to GPS check
+          // Double Chow — skip photo, go straight to GPS check
           setCheckinState({ step: 'photo', spotId, spotName, isFirstVisit: false });
         }
       } catch {
@@ -527,7 +527,7 @@ export default function Map() {
         const p = e.features[0].properties;
         const coords = e.features[0].geometry.coordinates.slice();
 
-        activePopupRef.current = new mapboxgl.Popup({ offset: 25, maxWidth: '280px', className: 'chud-popup' })
+        activePopupRef.current = new mapboxgl.Popup({ offset: 25, maxWidth: '280px', className: 'chow-popup' })
           .setLngLat(coords)
           .setHTML(`
             <div style="background:#00274C;color:white;border-radius:16px;padding:16px;font-family:system-ui,sans-serif;min-width:220px;">
@@ -637,7 +637,7 @@ export default function Map() {
         zIndex: 10, display: 'flex', flexDirection: 'column',
         alignItems: 'center', paddingTop: 24, gap: 8,
       }}>
-        <img src={logo} alt="A2 Chuds" style={{ width: 68, marginBottom: 16 }} />
+        <img src={logo} alt="A2 Chows" style={{ width: 68, marginBottom: 16 }} />
         {[
           { label: <IoMap size={22} />, page: 'map', title: 'Map' },
           { label: <IoTrophy size={22} />, page: 'leaderboard', title: 'Leaderboard' },
@@ -827,7 +827,7 @@ export default function Map() {
             {checkinState.step === 'photo' && (
               <>
                 <div style={{ color: '#FFCB05', fontWeight: 800, fontSize: 18, marginBottom: 4 }}>
-                  {checkinState.isFirstVisit ? 'Check In' : 'Double Chud'}
+                  {checkinState.isFirstVisit ? 'Check In' : 'Double Chow'}
                 </div>
                 <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 20 }}>
                   {checkinState.spotName}
@@ -863,7 +863,7 @@ export default function Map() {
                     />
                   </label>
                 ) : (
-                  /* Double Chud — no photo needed */
+                  /* Double Chow — no photo needed */
                   <div style={{
                     width: '100%', height: 120, borderRadius: 14, marginBottom: 16,
                     background: 'rgba(255,203,5,0.08)', border: '1px solid rgba(255,203,5,0.2)',
@@ -911,7 +911,7 @@ export default function Map() {
                   {checkinState.isDoubleChud ? '🔄' : '✅'}
                 </div>
                 <div style={{ color: '#FFCB05', fontWeight: 800, fontSize: 20 }}>
-                  {checkinState.isDoubleChud ? 'Double Chud!' : 'Checked in!'}
+                  {checkinState.isDoubleChud ? 'Double Chow!' : 'Checked in!'}
                 </div>
                 <div style={{ color: 'white', fontSize: 15, marginTop: 6 }}>{checkinState.spotName}</div>
                 {checkinState.isDoubleChud && (

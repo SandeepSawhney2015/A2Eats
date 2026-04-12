@@ -17,14 +17,14 @@ html, body, #root {
   display: none !important;
 }
 
-.chud-popup .mapboxgl-popup-content {
+.chow-popup .mapboxgl-popup-content {
   background: transparent !important;
   padding: 0 !important;
   box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important;
   border-radius: 16px !important;
 }
 
-.chud-popup .mapboxgl-popup-close-button {
+.chow-popup .mapboxgl-popup-close-button {
   color: rgba(255,255,255,0.6) !important;
   font-size: 18px !important;
   right: 8px !important;
@@ -33,7 +33,7 @@ html, body, #root {
   z-index: 1;
 }
 
-.chud-popup .mapboxgl-popup-tip {
+.chow-popup .mapboxgl-popup-tip {
   border-top-color: #00274C !important;
 }
 

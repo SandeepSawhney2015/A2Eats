@@ -20,7 +20,7 @@ export default function Leaderboard() {
         display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 24, gap: 8,
         position: 'sticky', top: 0, height: '100vh',
       }}>
-        <img src={logo} alt="A2 Chuds" style={{ width: 68, marginBottom: 16 }} />
+        <img src={logo} alt="A2 Chows" style={{ width: 68, marginBottom: 16 }} />
         {NAV.map(item => (
           <a key={item.page} href={`/${item.page === 'map' ? '' : item.page}`} style={{
             width: 48, height: 48, borderRadius: 12,
@@ -54,7 +54,7 @@ export default function Leaderboard() {
         alignItems: 'center', justifyContent: 'center',
         padding: '24px 24px 100px',
       }}>
-        <img src={logo} alt="A2 Chuds" style={{ width: 100, marginBottom: 24 }} />
+        <img src={logo} alt="A2 Chows" style={{ width: 100, marginBottom: 24 }} />
         <div style={{ color: '#00274C', fontWeight: 900, fontSize: 28, marginBottom: 8 }}>Leaderboard</div>
         <div style={{ color: '#999', fontSize: 15 }}>Work in progress 🚧</div>
       </div>

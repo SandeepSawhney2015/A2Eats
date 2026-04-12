@@ -123,7 +123,7 @@ export default function Profile() {
           display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 24, gap: 8,
           position: 'sticky', top: 0, height: '100vh',
         }}>
-          <img src={logo} alt="A2 Chuds" style={{ width: 68, marginBottom: 16 }} />
+          <img src={logo} alt="A2 Chows" style={{ width: 68, marginBottom: 16 }} />
           {NAV.map(item => (
             <a key={item.page} href={`/${item.page === 'map' ? '' : item.page}`} style={{
               width: 48, height: 48, borderRadius: 12,
@@ -214,7 +214,7 @@ export default function Profile() {
                       {Number(data.user.chud_points).toLocaleString()}
                     </div>
                     <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                      Chud Pts
+                      Chow Pts
                     </div>
                   </div>
                   <div style={{ width: 1, background: 'rgba(255,255,255,0.1)' }} />
@@ -230,7 +230,7 @@ export default function Profile() {
               </div>
             </div>
 
-            {/* Grid: pie + recent chuds */}
+            {/* Grid: pie + recent chows */}
             <div style={{
               display: 'grid',
               gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
@@ -274,9 +274,9 @@ export default function Profile() {
                 )}
               </div>
 
-              {/* Recent Chuds */}
+              {/* Recent Chows */}
               <div style={{ background: 'white', borderRadius: 20, padding: 20, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-                <div style={{ color: '#00274C', fontWeight: 800, fontSize: 16, marginBottom: 16 }}>Recent Chuds</div>
+                <div style={{ color: '#00274C', fontWeight: 800, fontSize: 16, marginBottom: 16 }}>Recent Chows</div>
                 {data.recentCheckins.length === 0 ? (
                   <div style={{ color: '#999', fontSize: 14, textAlign: 'center', padding: '32px 0' }}>No check-ins yet</div>
                 ) : (
