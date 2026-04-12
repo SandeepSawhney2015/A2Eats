@@ -1,10 +1,19 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 const pool = require('../db');
 const requireAuth = require('../middleware/auth');
 
 const router = express.Router();
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { error: 'Too many login attempts. Try again in 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 async function verifyTurnstile(token) {
   const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
@@ -49,7 +58,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   const { email, password, turnstileToken } = req.body;
 
   if (!turnstileToken || !(await verifyTurnstile(turnstileToken))) {

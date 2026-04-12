@@ -5,10 +5,7 @@ const pool = require('../db');
 const requireAuth = require('../middleware/auth');
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-// In-memory rate limiters
-const suggestionLog = new Map();
-const editLog = new Map();
+const { checkRateLimit } = require('../db/rateLimit');
 
 const router = express.Router();
 
@@ -87,11 +84,9 @@ router.post('/suggest', requireAuth, async (req, res) => {
     return res.status(400).json({ error: 'name, address, and category are required' });
   }
 
-  // Rate limiting — max 2 suggestions per user per day
-  const now = Date.now();
-  const oneDay = 24 * 60 * 60 * 1000;
-  const userLog = (suggestionLog.get(req.userId) || []).filter(t => now - t < oneDay);
-  if (userLog.length >= 2) {
+  // Rate limiting — max 2 suggestions per user per day (persistent)
+  const { limited: suggestLimited } = await checkRateLimit(`suggest:${req.userId}`, 2, 24 * 60 * 60 * 1000);
+  if (suggestLimited) {
     return res.status(429).json({ error: 'You can only suggest 2 spots per day. Try again tomorrow.' });
   }
 
@@ -139,9 +134,6 @@ router.post('/suggest', requireAuth, async (req, res) => {
       [name, address, lat, lng, category]
     );
 
-    userLog.push(now);
-    suggestionLog.set(req.userId, userLog);
-
     res.json({ message: 'Spot suggestion received' });
   } catch (err) {
     console.error(err);
@@ -173,10 +165,8 @@ router.patch('/:id/edit', requireAuth, async (req, res) => {
     return res.status(400).json({ error: 'category is required' });
   }
 
-  const now = Date.now();
-  const oneHour = 60 * 60 * 1000;
-  const userLog = (editLog.get(req.userId) || []).filter(t => now - t < oneHour);
-  if (userLog.length >= 5) {
+  const { limited: editLimited } = await checkRateLimit(`edit:${req.userId}`, 5, 60 * 60 * 1000);
+  if (editLimited) {
     return res.status(429).json({ error: 'Edit limit reached (5/hour). Try again later.' });
   }
 
@@ -190,8 +180,6 @@ router.patch('/:id/edit', requireAuth, async (req, res) => {
       `UPDATE spots SET category = $1 WHERE id = $2 RETURNING *`,
       values
     );
-    userLog.push(now);
-    editLog.set(req.userId, userLog);
     res.json(result.rows[0]);
   } catch (err) {
     console.error(err);
