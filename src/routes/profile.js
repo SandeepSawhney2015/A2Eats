@@ -6,6 +6,17 @@ const Filter = require('bad-words');
 const router = express.Router();
 const filter = new Filter();
 
+// Substring roots — catches concatenated words that tokenizers miss (e.g. "fuckshit")
+const PROFANE_ROOTS = [
+  'fuck','shit','cunt','cock','dick','pussy','ass','bitch','nigger','nigga',
+  'faggot','fag','chink','spic','kike','tranny','retard','wetback','gook',
+  'cracker','dyke','whore','slut','cuck','twat','piss','prick','bastard',
+];
+function containsProfaneSubstring(str) {
+  const lower = str.toLowerCase();
+  return PROFANE_ROOTS.some(w => lower.includes(w));
+}
+
 router.get('/', requireAuth, async (req, res) => {
   try {
     // User data + rank
@@ -64,7 +75,7 @@ router.patch('/name', requireAuth, async (req, res) => {
   if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
     return res.status(400).json({ error: 'Only letters, numbers, _ and - allowed' });
   }
-  if (filter.isProfane(name)) {
+  if (filter.isProfane(name) || containsProfaneSubstring(name)) {
     return res.status(400).json({ error: 'Username contains inappropriate content' });
   }
 
