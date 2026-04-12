@@ -1,8 +1,10 @@
 const express = require('express');
 const pool = require('../db');
 const requireAuth = require('../middleware/auth');
+const Filter = require('bad-words');
 
 const router = express.Router();
+const filter = new Filter();
 
 router.get('/', requireAuth, async (req, res) => {
   try {
@@ -46,6 +48,33 @@ router.get('/', requireAuth, async (req, res) => {
     });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.patch('/name', requireAuth, async (req, res) => {
+  const raw = req.body.name;
+  if (typeof raw !== 'string') return res.status(400).json({ error: 'name required' });
+
+  const name = raw.trim();
+
+  if (name.length < 3 || name.length > 20) {
+    return res.status(400).json({ error: 'Username must be 3–20 characters' });
+  }
+  if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+    return res.status(400).json({ error: 'Only letters, numbers, _ and - allowed' });
+  }
+  if (filter.isProfane(name)) {
+    return res.status(400).json({ error: 'Username contains inappropriate content' });
+  }
+
+  try {
+    const existing = await pool.query('SELECT id FROM users WHERE name = $1 AND id != $2', [name, req.userId]);
+    if (existing.rows.length > 0) return res.status(400).json({ error: 'That username is already taken' });
+
+    await pool.query('UPDATE users SET name = $1 WHERE id = $2', [name, req.userId]);
+    res.json({ success: true, name });
+  } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }
 });

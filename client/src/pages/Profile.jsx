@@ -49,6 +49,10 @@ export default function Profile() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [nameSaving, setNameSaving] = useState(false);
   const fileRef = useRef(null);
   const width = useWindowWidth();
   const isMobile = width < 768;
@@ -104,6 +108,23 @@ export default function Profile() {
       console.error('Photo upload failed', err);
     } finally {
       setUploadingPhoto(false);
+    }
+  };
+
+  const handleSaveName = async () => {
+    setNameError('');
+    setNameSaving(true);
+    try {
+      await axios.patch(`${BASE}/api/profile/name`,
+        { name: nameInput },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setData(prev => ({ ...prev, user: { ...prev.user, name: nameInput.trim() } }));
+      setEditingName(false);
+    } catch (err) {
+      setNameError(err.response?.data?.error || 'Could not save username');
+    } finally {
+      setNameSaving(false);
     }
   };
 
@@ -310,13 +331,71 @@ export default function Profile() {
 
             </div>
 
+            {/* Edit Username */}
+            {editingName ? (
+              <div style={{ marginTop: 32 }}>
+                <div style={{ fontWeight: 700, fontSize: 13, color: '#00274C', marginBottom: 8 }}>Choose a new username</div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    value={nameInput}
+                    onChange={e => setNameInput(e.target.value)}
+                    maxLength={20}
+                    placeholder="3–20 chars, letters/numbers/_/-"
+                    onKeyDown={e => { if (e.key === 'Enter') handleSaveName(); if (e.key === 'Escape') setEditingName(false); }}
+                    style={{
+                      flex: 1, padding: '10px 14px', borderRadius: 12,
+                      border: nameError ? '1.5px solid #FF3B30' : '1.5px solid #e0e0e0',
+                      fontSize: 14, outline: 'none', fontFamily: 'inherit',
+                    }}
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleSaveName}
+                    disabled={nameSaving}
+                    style={{
+                      padding: '10px 18px', borderRadius: 12, border: 'none',
+                      background: '#00274C', color: '#FFCB05', fontWeight: 700,
+                      fontSize: 14, cursor: nameSaving ? 'default' : 'pointer', opacity: nameSaving ? 0.6 : 1,
+                    }}
+                  >
+                    {nameSaving ? 'Saving…' : 'Save'}
+                  </button>
+                  <button
+                    onClick={() => { setEditingName(false); setNameError(''); }}
+                    style={{
+                      padding: '10px 14px', borderRadius: 12,
+                      border: '1.5px solid #e0e0e0', background: 'none',
+                      fontSize: 14, cursor: 'pointer', color: '#999',
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+                {nameError && <div style={{ color: '#FF3B30', fontSize: 13, marginTop: 6 }}>{nameError}</div>}
+              </div>
+            ) : (
+              <button
+                onClick={() => { setNameInput(data.user.name); setNameError(''); setEditingName(true); }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,39,76,0.06)'; e.currentTarget.style.borderColor = '#00274C'; e.currentTarget.style.color = '#00274C'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = '#e0e0e0'; e.currentTarget.style.color = '#999'; }}
+                style={{
+                  marginTop: 32, width: '100%', padding: '12px 0',
+                  background: 'none', border: '1.5px solid #e0e0e0',
+                  borderRadius: 14, color: '#999', fontWeight: 700,
+                  fontSize: 14, cursor: 'pointer', transition: 'all 0.15s ease',
+                }}
+              >
+                Edit Username
+              </button>
+            )}
+
             {/* Logout */}
             <button
               onClick={() => { logout(); navigate('/login'); }}
               onMouseEnter={e => { e.currentTarget.style.background = '#FF3B30'; e.currentTarget.style.borderColor = '#FF3B30'; e.currentTarget.style.color = '#fff'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = '#e0e0e0'; e.currentTarget.style.color = '#999'; }}
               style={{
-                marginTop: 32, width: '100%', padding: '12px 0',
+                marginTop: 12, width: '100%', padding: '12px 0',
                 background: 'none', border: '1.5px solid #e0e0e0',
                 borderRadius: 14, color: '#999', fontWeight: 700,
                 fontSize: 14, cursor: 'pointer', transition: 'all 0.15s ease',
