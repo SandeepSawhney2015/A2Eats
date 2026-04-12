@@ -400,9 +400,9 @@ export default function Profile() {
                 <div style={{ display: 'flex', gap: 8 }}>
                   <input
                     value={nameInput}
-                    onChange={e => setNameInput(e.target.value)}
+                    onChange={e => setNameInput(e.target.value.replace(/\s/g, ''))}
                     maxLength={20}
-                    placeholder="3–20 chars, letters/numbers/_/-"
+                    placeholder="your name!"
                     onKeyDown={e => { if (e.key === 'Enter') handleSaveName(); if (e.key === 'Escape') setEditingName(false); }}
                     style={{
                       flex: 1, padding: '10px 14px', borderRadius: 12,
@@ -433,7 +433,10 @@ export default function Profile() {
                     Cancel
                   </button>
                 </div>
-                {nameError && <div style={{ color: '#FF3B30', fontSize: 13, marginTop: 6 }}>{nameError}</div>}
+                <div style={{ color: '#aaa', fontSize: 12, marginTop: 6 }}>
+                  Hint: Make it something like your name :)
+                </div>
+                {nameError && <div style={{ color: '#FF3B30', fontSize: 13, marginTop: 4 }}>{nameError}</div>}
               </div>
             ) : (
               <button
