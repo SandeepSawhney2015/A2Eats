@@ -72,6 +72,8 @@ export default function Map() {
   const [manualEntry, setManualEntry] = useState(false);
   const placeSearchRef = useRef(null);
   const autocompleteRef = useRef(null);
+  const addressInputRef = useRef(null);
+  const addressAutocompleteRef = useRef(null);
   const { token, user } = useAuth();
 
   const SUGGESTION_KEY = `suggestion_log_${user?.id}`;
@@ -122,6 +124,34 @@ export default function Map() {
     }
     return () => { autocompleteRef.current = null; };
   }, [showAddSpot]);
+
+  // Init address autocomplete for manual entry mode
+  useEffect(() => {
+    if (!manualEntry || !showAddSpot) return;
+    const init = () => {
+      if (!addressInputRef.current || addressAutocompleteRef.current) return;
+      const ac = new window.google.maps.places.Autocomplete(addressInputRef.current, {
+        componentRestrictions: { country: 'us' },
+        fields: ['formatted_address', 'geometry'],
+        types: ['address'],
+      });
+      ac.addListener('place_changed', () => {
+        const place = ac.getPlace();
+        if (!place.geometry) return;
+        setNewSpot(prev => ({
+          ...prev,
+          address: place.formatted_address || prev.address,
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng(),
+        }));
+      });
+      addressAutocompleteRef.current = ac;
+    };
+    if (window.google?.maps?.places) {
+      init();
+    }
+    return () => { addressAutocompleteRef.current = null; };
+  }, [manualEntry, showAddSpot]);
 
   const getSuggestionLog = () => {
     try {
@@ -349,12 +379,14 @@ export default function Map() {
       setSubmitStatus(`Limit reached. Try again in ${minutesLeft} min.`);
       return;
     }
-    if (!manualEntry && (!newSpot.lat || !newSpot.lng)) {
-      setSubmitStatus('Please select a restaurant from the search dropdown.');
+    if (!newSpot.lat || !newSpot.lng) {
+      setSubmitStatus(manualEntry
+        ? 'Please select an address from the dropdown to confirm the location.'
+        : 'Please select a restaurant from the search dropdown.');
       return;
     }
-    if (manualEntry && (!newSpot.name || !newSpot.address)) {
-      setSubmitStatus('Please enter both a name and address.');
+    if (manualEntry && !newSpot.name) {
+      setSubmitStatus('Please enter the restaurant name.');
       return;
     }
     setSubmitting(true);
@@ -868,11 +900,13 @@ export default function Map() {
                     style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', marginBottom: 10, fontSize: 14, boxSizing: 'border-box' }}
                   />
                   <input
-                    type="text" placeholder="Full address (e.g. 512 E William St, Ann Arbor, MI)" required
-                    value={newSpot.address}
-                    onChange={e => setNewSpot({ ...newSpot, address: e.target.value })}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', marginBottom: 10, fontSize: 14, boxSizing: 'border-box' }}
+                    ref={addressInputRef}
+                    type="text" placeholder="Start typing the address..."
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', marginBottom: 4, fontSize: 14, boxSizing: 'border-box' }}
                   />
+                  {newSpot.address && (
+                    <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11, marginBottom: 10 }}>✓ {newSpot.address}</div>
+                  )}
                   <button type="button" onClick={() => { setManualEntry(false); setNewSpot(prev => ({ ...prev, name: '', address: '', lat: null, lng: null })); }} style={{
                     background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)',
                     fontSize: 12, cursor: 'pointer', marginBottom: 10, padding: 0, textDecoration: 'underline',
