@@ -8,7 +8,7 @@ const BASE_POINTS = 10;
 const DOUBLE_CHUD_POINTS = 3;
 
 const CHECKIN_RADIUS_MILES = 0.05; // ~265 feet — tight enough to require being at the spot, forgiving for GPS drift
-const GLOBAL_CHECKIN_COOLDOWN_MS = 30 * 60 * 1000; // 30 min between any check-ins, prevents cluster farming
+const GLOBAL_CHECKIN_COOLDOWN_MS = 30 * 60 * 1000; // 30 min between any check-ins
 
 function isValidPhotoUrl(url) {
   if (!url) return true; // optional field
@@ -56,20 +56,18 @@ router.post('/', requireAuth, async (req, res) => {
       });
     }
 
-    // Global cooldown — prevent farming a cluster of nearby spots (skipped during active hops)
-    if (!hop_id) {
-      const lastAny = await pool.query(
-        'SELECT created_at FROM check_ins WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1',
-        [req.userId]
-      );
-      if (lastAny.rows.length > 0) {
-        const msSinceLast = Date.now() - new Date(lastAny.rows[0].created_at).getTime();
-        if (msSinceLast < GLOBAL_CHECKIN_COOLDOWN_MS) {
-          const minsLeft = Math.ceil((GLOBAL_CHECKIN_COOLDOWN_MS - msSinceLast) / 60000);
-          return res.status(429).json({
-            error: `You just checked in somewhere. Wait ${minsLeft} minute${minsLeft !== 1 ? 's' : ''} before checking in again.`
-          });
-        }
+    // Global 30min cooldown — applies to all check-ins, hop or not
+    const lastAny = await pool.query(
+      'SELECT created_at FROM check_ins WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1',
+      [req.userId]
+    );
+    if (lastAny.rows.length > 0) {
+      const msSinceLast = Date.now() - new Date(lastAny.rows[0].created_at).getTime();
+      if (msSinceLast < GLOBAL_CHECKIN_COOLDOWN_MS) {
+        const minsLeft = Math.ceil((GLOBAL_CHECKIN_COOLDOWN_MS - msSinceLast) / 60000);
+        return res.status(429).json({
+          error: `You just checked in somewhere. Wait ${minsLeft} minute${minsLeft !== 1 ? 's' : ''} before checking in again.`
+        });
       }
     }
 

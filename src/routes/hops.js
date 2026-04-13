@@ -5,6 +5,7 @@ const requireAuth = require('../middleware/auth');
 const router = express.Router();
 
 const CHECKIN_RADIUS_MILES = 0.05; // ~265 feet
+const GLOBAL_CHECKIN_COOLDOWN_MS = 30 * 60 * 1000; // 30 min between any check-ins
 const BASE_POINTS = 10;
 const DOUBLE_CHUD_POINTS = 3;
 const HOP_BONUS_POINTS = 20;
@@ -191,6 +192,21 @@ router.post('/current/stops/:stopId/complete', requireAuth, async (req, res) => 
     if (dist > CHECKIN_RADIUS_MILES) {
       const ft = Math.round(dist * 5280);
       return res.status(400).json({ error: `You're ${ft} ft away — get within ${Math.round(CHECKIN_RADIUS_MILES * 5280)} ft to chow.` });
+    }
+
+    // Global 30min cooldown — applies to all check-ins, hop or not
+    const lastAny = await pool.query(
+      'SELECT created_at FROM check_ins WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1',
+      [req.userId]
+    );
+    if (lastAny.rows.length > 0) {
+      const msSinceLast = Date.now() - new Date(lastAny.rows[0].created_at).getTime();
+      if (msSinceLast < GLOBAL_CHECKIN_COOLDOWN_MS) {
+        const minsLeft = Math.ceil((GLOBAL_CHECKIN_COOLDOWN_MS - msSinceLast) / 60000);
+        return res.status(400).json({
+          error: `You just checked in somewhere. Wait ${minsLeft} minute${minsLeft !== 1 ? 's' : ''} before checking in again.`
+        });
+      }
     }
 
     // Per-spot daily cooldown — can't chud the same place twice in one day
