@@ -311,8 +311,11 @@ export default function Hops() {
 
       if (data.hopCompleted) {
         showToast(`🎉 Hop Complete! +${data.bonusPoints} bonus pts!`, 'success');
+      } else if (data.isDoubleChud) {
+        showToast(`+${data.points} pts · Double Chow!`, 'success');
       } else {
-        showToast(`+${data.points} pts${data.isDoubleChud ? ' · Double Chow!' : ''}`, 'success');
+        const multiplierLabel = data.multiplier > 1 ? ` · ${data.multiplier}x` : '';
+        showToast(`+${data.points} pts${multiplierLabel}`, 'success');
       }
       await fetchHop();
     } catch (err) {

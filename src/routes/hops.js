@@ -223,7 +223,15 @@ router.post('/current/stops/:stopId/complete', requireAuth, async (req, res) => 
       `SELECT id FROM check_ins WHERE user_id = $1 AND spot_id = $2`, [req.userId, stop.spot_id]
     );
     const isDoubleChud = prev.rows.length > 0;
-    const points = isDoubleChud ? DOUBLE_CHUD_POINTS : BASE_POINTS;
+
+    // Multiplier based on stops already completed in this hop (Double Chow stays flat)
+    const completedSoFar = await pool.query(
+      `SELECT COUNT(*) FROM hop_spots WHERE hop_id = $1 AND checked_in_at IS NOT NULL`,
+      [hop.id]
+    );
+    const stopIndex = parseInt(completedSoFar.rows[0].count); // 0-based: 0 = first stop
+    const multiplier = isDoubleChud ? 1 : 1 + stopIndex * 0.5;
+    const points = isDoubleChud ? DOUBLE_CHUD_POINTS : Math.round(BASE_POINTS * multiplier);
 
     // Record check-in
     const checkinResult = await pool.query(
@@ -253,7 +261,7 @@ router.post('/current/stops/:stopId/complete', requireAuth, async (req, res) => 
     }
 
     const stops = await getStops(hop.id);
-    res.json({ points, isDoubleChud, hopCompleted, bonusPoints: hopCompleted ? HOP_BONUS_POINTS : 0, stops });
+    res.json({ points, isDoubleChud, multiplier, hopCompleted, bonusPoints: hopCompleted ? HOP_BONUS_POINTS : 0, stops });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
