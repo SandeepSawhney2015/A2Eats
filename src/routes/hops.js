@@ -47,13 +47,26 @@ async function getStops(hopId) {
   return result.rows;
 }
 
+const DAILY_HOP_LIMIT = 3;
+
+async function getHopsStartedToday(userId) {
+  const result = await pool.query(
+    `SELECT COUNT(*) FROM hops WHERE user_id = $1 AND status IN ('active', 'completed', 'failed') AND started_at > NOW() - INTERVAL '24 hours'`,
+    [userId]
+  );
+  return parseInt(result.rows[0].count);
+}
+
 // GET /current
 router.get('/current', requireAuth, async (req, res) => {
   try {
-    const hop = await getActiveHop(req.userId);
-    if (!hop) return res.json(null);
+    const [hop, hopsStartedToday] = await Promise.all([
+      getActiveHop(req.userId),
+      getHopsStartedToday(req.userId),
+    ]);
+    if (!hop) return res.json({ hop: null, hopsStartedToday });
     const stops = await getStops(hop.id);
-    res.json({ ...hop, stops });
+    res.json({ hop: { ...hop, stops }, hopsStartedToday });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
@@ -136,6 +149,11 @@ router.post('/current/start', requireAuth, async (req, res) => {
 
     const stops = await getStops(hop.id);
     if (stops.length < 2) return res.status(400).json({ error: 'Add at least 2 stops to start a hop' });
+
+    const hopsStartedToday = await getHopsStartedToday(req.userId);
+    if (hopsStartedToday >= DAILY_HOP_LIMIT) {
+      return res.status(429).json({ error: `You've used all ${DAILY_HOP_LIMIT} hops for today. Come back tomorrow!` });
+    }
 
     const result = await pool.query(
       `UPDATE hops SET status = 'active', started_at = NOW(), expires_at = NOW() + interval '24 hours'

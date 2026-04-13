@@ -51,6 +51,7 @@ export default function Hops() {
 
   const [hop, setHop] = useState(undefined);
   const [hopLoaded, setHopLoaded] = useState(false);
+  const [hopsStartedToday, setHopsStartedToday] = useState(0);
   const [userLoc, setUserLoc] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -75,7 +76,8 @@ export default function Hops() {
   const fetchHop = useCallback(async () => {
     try {
       const { data } = await axios.get(`${BASE}/api/hops/current`, auth);
-      setHop(data);
+      setHop(data.hop);
+      setHopsStartedToday(data.hopsStartedToday ?? 0);
     } catch {
       setHop(null);
     } finally {
@@ -390,11 +392,24 @@ export default function Hops() {
               <div style={{ color: '#999', fontSize: 14, maxWidth: 260 }}>
                 Build a route of 2+ spots, chow at each one, and earn bonus points for completing the full hop.
               </div>
-              <button onClick={createHop} style={{
-                marginTop: 12, background: '#00274C', color: '#FFCB05',
-                border: 'none', borderRadius: 14, padding: '14px 32px',
-                fontWeight: 800, fontSize: 16, cursor: 'pointer',
-              }}>Start Planning</button>
+              <div style={{
+                fontSize: 13, fontWeight: 700,
+                color: hopsStartedToday >= 3 ? '#FF3B30' : '#00274C',
+                background: hopsStartedToday >= 3 ? 'rgba(255,59,48,0.08)' : 'rgba(0,39,76,0.07)',
+                borderRadius: 10, padding: '6px 14px',
+              }}>
+                {hopsStartedToday >= 3 ? 'No hops left today — come back tomorrow!' : `${3 - hopsStartedToday} hop${3 - hopsStartedToday !== 1 ? 's' : ''} left today`}
+              </div>
+              <button
+                onClick={hopsStartedToday >= 3 ? undefined : createHop}
+                disabled={hopsStartedToday >= 3}
+                style={{
+                  marginTop: 4, background: hopsStartedToday >= 3 ? '#e0e0e0' : '#00274C',
+                  color: hopsStartedToday >= 3 ? '#aaa' : '#FFCB05',
+                  border: 'none', borderRadius: 14, padding: '14px 32px',
+                  fontWeight: 800, fontSize: 16,
+                  cursor: hopsStartedToday >= 3 ? 'not-allowed' : 'pointer',
+                }}>Start Planning</button>
             </div>
           )}
 
@@ -510,17 +525,22 @@ export default function Hops() {
 
                 {!(isMobile && searchFocused) && (
                   <>
-                    <div style={{ color: '#bbb', fontSize: 11, textAlign: 'center', marginBottom: 10 }}>
-                      {hop.stops.length < 2 ? `Add ${2 - hop.stops.length} more stop${hop.stops.length === 1 ? '' : 's'} to start` : `${hop.stops.length} stops ready`}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                      <div style={{ color: '#bbb', fontSize: 11 }}>
+                        {hop.stops.length < 2 ? `Add ${2 - hop.stops.length} more stop${hop.stops.length === 1 ? '' : 's'} to start` : `${hop.stops.length} stops ready`}
+                      </div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: hopsStartedToday >= 3 ? '#FF3B30' : '#999' }}>
+                        {3 - hopsStartedToday} hop{3 - hopsStartedToday !== 1 ? 's' : ''} left today
+                      </div>
                     </div>
                     <button
                       onClick={startHop}
-                      disabled={hop.stops.length < 2}
+                      disabled={hop.stops.length < 2 || hopsStartedToday >= 3}
                       style={{
-                        background: hop.stops.length < 2 ? '#e0e0e0' : '#00274C',
-                        color: hop.stops.length < 2 ? '#aaa' : '#FFCB05',
+                        background: (hop.stops.length < 2 || hopsStartedToday >= 3) ? '#e0e0e0' : '#00274C',
+                        color: (hop.stops.length < 2 || hopsStartedToday >= 3) ? '#aaa' : '#FFCB05',
                         border: 'none', borderRadius: 14, padding: '14px 0',
-                        fontWeight: 800, fontSize: 15, cursor: hop.stops.length < 2 ? 'not-allowed' : 'pointer',
+                        fontWeight: 800, fontSize: 15, cursor: (hop.stops.length < 2 || hopsStartedToday >= 3) ? 'not-allowed' : 'pointer',
                         width: '100%',
                       }}
                     >Start Hop 🍺</button>
