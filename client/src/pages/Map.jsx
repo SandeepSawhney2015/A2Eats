@@ -55,6 +55,7 @@ export default function Map() {
   const [mode, setMode] = useState('all');
   const [userLocation, setUserLocation] = useState(null);
   const [directionsInfo, setDirectionsInfo] = useState(null);
+  const [directionsToast, setDirectionsToast] = useState(null);
   const [checkinState, setCheckinState] = useState(null);
   // checkinState shapes:
   // null
@@ -281,7 +282,12 @@ export default function Map() {
               headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
             });
             transitSteps = transitRes.data;
-          } catch {
+          } catch (err) {
+            if (err.response?.status === 429) {
+              const msg = err.response?.data?.error || 'Too many directions requests. Try again later.';
+              setDirectionsToast(msg);
+              setTimeout(() => setDirectionsToast(null), 4000);
+            }
             // transit unavailable — still show walking info
           }
         }
@@ -947,6 +953,33 @@ export default function Map() {
               </>
             )}
 
+          </div>
+        </div>
+      )}
+
+      {/* Directions rate limit toast */}
+      {directionsToast && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 30,
+          background: 'rgba(0,0,0,0.65)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            background: '#00274C', borderRadius: 20, padding: '28px 24px',
+            maxWidth: 320, width: '85%', textAlign: 'center',
+            boxShadow: '0 4px 32px rgba(0,0,0,0.5)',
+            fontFamily: 'system-ui, sans-serif',
+          }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>🚦</div>
+            <div style={{ color: '#FFCB05', fontWeight: 800, fontSize: 18 }}>Slow down!</div>
+            <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14, marginTop: 8 }}>
+              {directionsToast}
+            </div>
+            <button onClick={() => setDirectionsToast(null)} style={{
+              marginTop: 20, padding: '10px 24px', background: '#FFCB05',
+              color: '#00274C', border: 'none', borderRadius: 10,
+              fontWeight: 800, cursor: 'pointer', fontSize: 14,
+            }}>OK</button>
           </div>
         </div>
       )}
