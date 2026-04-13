@@ -51,7 +51,8 @@ const DAILY_HOP_LIMIT = 3;
 
 async function getHopsStartedToday(userId) {
   const result = await pool.query(
-    `SELECT COUNT(*) FROM hops WHERE user_id = $1 AND status IN ('active', 'completed', 'failed') AND started_at > NOW() - INTERVAL '24 hours'`,
+    `SELECT COUNT(*) FROM hops WHERE user_id = $1 AND status IN ('active', 'completed', 'failed')
+     AND (started_at AT TIME ZONE 'America/Detroit')::date = (NOW() AT TIME ZONE 'America/Detroit')::date`,
     [userId]
   );
   return parseInt(result.rows[0].count);
@@ -152,7 +153,7 @@ router.post('/current/start', requireAuth, async (req, res) => {
 
     const hopsStartedToday = await getHopsStartedToday(req.userId);
     if (hopsStartedToday >= DAILY_HOP_LIMIT) {
-      return res.status(429).json({ error: `You've used all ${DAILY_HOP_LIMIT} hops for today. Come back tomorrow!` });
+      return res.status(429).json({ error: `You've used all ${DAILY_HOP_LIMIT} hops for today. Resets at midnight!` });
     }
 
     const result = await pool.query(

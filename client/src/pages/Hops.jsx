@@ -87,6 +87,18 @@ export default function Hops() {
 
   useEffect(() => { fetchHop(); }, [fetchHop]);
 
+  // Refresh at midnight Eastern so the hop counter resets automatically
+  useEffect(() => {
+    const msUntilMidnight = () => {
+      const nowEastern = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Detroit' }));
+      const midnight = new Date(nowEastern);
+      midnight.setHours(24, 0, 0, 0);
+      return midnight - nowEastern;
+    };
+    const id = setTimeout(() => fetchHop(), msUntilMidnight());
+    return () => clearTimeout(id);
+  }, [fetchHop]);
+
   // Debounced search
   useEffect(() => {
     if (!searchQuery.trim()) { setSearchResults([]); return; }
@@ -398,7 +410,7 @@ export default function Hops() {
                 background: hopsStartedToday >= 3 ? 'rgba(255,59,48,0.08)' : 'rgba(0,39,76,0.07)',
                 borderRadius: 10, padding: '6px 14px',
               }}>
-                {hopsStartedToday >= 3 ? 'No hops left today — come back tomorrow!' : `${3 - hopsStartedToday} hop${3 - hopsStartedToday !== 1 ? 's' : ''} left today`}
+                {hopsStartedToday >= 3 ? 'No hops left today — resets at midnight!' : `${3 - hopsStartedToday} hop${3 - hopsStartedToday !== 1 ? 's' : ''} left today`}
               </div>
               <button
                 onClick={hopsStartedToday >= 3 ? undefined : createHop}
