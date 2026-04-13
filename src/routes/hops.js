@@ -187,6 +187,15 @@ router.post('/current/stops/:stopId/complete', requireAuth, async (req, res) => 
     if (!stop) return res.status(404).json({ error: 'Stop not found' });
     if (stop.checked_in_at) return res.status(400).json({ error: 'Already completed this stop' });
 
+    // Enforce sequential order — all prior stops must be completed first
+    const priorUncompleted = await pool.query(
+      `SELECT id FROM hop_spots WHERE hop_id = $1 AND position < $2 AND checked_in_at IS NULL`,
+      [hop.id, stop.position]
+    );
+    if (priorUncompleted.rows.length > 0) {
+      return res.status(400).json({ error: 'Complete the previous stops first.' });
+    }
+
     // GPS proximity check
     const dist = haversine(parseFloat(user_lat), parseFloat(user_lng), parseFloat(stop.lat), parseFloat(stop.lng));
     if (dist > CHECKIN_RADIUS_MILES) {

@@ -78,8 +78,14 @@ export default function Hops() {
       const { data } = await axios.get(`${BASE}/api/hops/current`, auth);
       setHop(data.hop);
       setHopsStartedToday(data.hopsStartedToday ?? 0);
+      if (data.hop?.status === 'active') {
+        localStorage.setItem('hopActive', 'true');
+      } else {
+        localStorage.removeItem('hopActive');
+      }
     } catch {
       setHop(null);
+      localStorage.removeItem('hopActive');
     } finally {
       setHopLoaded(true);
     }

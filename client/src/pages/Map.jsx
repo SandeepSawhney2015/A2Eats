@@ -95,6 +95,13 @@ export default function Map() {
     } catch { return []; }
   };
 
+  // Redirect to hops page if a hop is active
+  useEffect(() => {
+    if (localStorage.getItem('hopActive') === 'true') {
+      window.location.href = '/hops';
+    }
+  }, []);
+
   // Keep refs in sync
   useEffect(() => { userLocationRef.current = userLocation; }, [userLocation]);
   useEffect(() => { tokenRef.current = token; }, [token]);
